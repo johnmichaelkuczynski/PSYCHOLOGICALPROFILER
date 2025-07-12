@@ -7,6 +7,11 @@ import SimplePsychologicalResults from "@/components/SimplePsychologicalResults"
 import ErrorSection from "@/components/ErrorSection";
 import HelpModal from "@/components/HelpModal";
 import Footer from "@/components/Footer";
+import UserAccountBar from "@/components/UserAccountBar";
+import AuthModal from "@/components/AuthModal";
+import PaymentModal from "@/components/PaymentModal";
+import TokenLimitModal from "@/components/TokenLimitModal";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCognitiveAnalysis } from "@/hooks/useCognitiveAnalysis";
 import { usePsychologicalAnalysis } from "@/hooks/usePsychologicalAnalysis";
 import { AnalysisType } from "@/types/analysis";
@@ -17,6 +22,20 @@ export default function Home() {
   const [showHelp, setShowHelp] = useState(false);
   const [textSample, setTextSample] = useState("");
   const [analysisType, setAnalysisType] = useState<AnalysisType>("cognitive");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showTokenLimitModal, setShowTokenLimitModal] = useState(false);
+  const [tokenLimitInfo, setTokenLimitInfo] = useState<{
+    type: 'free_limit' | 'insufficient_tokens' | 'upload_blocked';
+    message: string;
+    currentBalance?: number;
+    requiredTokens?: number;
+  }>({
+    type: 'free_limit',
+    message: ''
+  });
+  
+  const { user, login, logout, refreshUser } = useAuth();
   
   // Cognitive analysis hook
   const {
@@ -58,6 +77,39 @@ export default function Home() {
       analyzeCognitiveText(textSample);
     } else {
       analyzePsychologicalText(textSample);
+    }
+  };
+
+  const handleAuthSuccess = (userData: any) => {
+    login(userData);
+    refreshUser();
+  };
+
+  const handlePaymentSuccess = () => {
+    refreshUser();
+  };
+
+  const handleShowTokenLimit = (type: 'free_limit' | 'insufficient_tokens' | 'upload_blocked', message: string, currentBalance?: number, requiredTokens?: number) => {
+    setTokenLimitInfo({
+      type,
+      message,
+      currentBalance,
+      requiredTokens
+    });
+    setShowTokenLimitModal(true);
+  };
+
+  const handleTokenLimitRegister = () => {
+    setShowTokenLimitModal(false);
+    setShowAuthModal(true);
+  };
+
+  const handleTokenLimitBuyCredits = () => {
+    setShowTokenLimitModal(false);
+    if (user) {
+      setShowPaymentModal(true);
+    } else {
+      setShowAuthModal(true);
     }
   };
 
@@ -131,6 +183,14 @@ export default function Home() {
       </header>
 
       <main className="flex-grow container mx-auto px-4 py-6 sm:py-8 md:py-12">
+        {/* User Account Bar */}
+        <UserAccountBar 
+          user={user}
+          onLogin={() => setShowAuthModal(true)}
+          onLogout={logout}
+          onBuyCredits={() => setShowPaymentModal(true)}
+        />
+        
         {!isLoading && !hasResult && !isError && (
           <>
             <IntroSection 
@@ -186,6 +246,36 @@ export default function Home() {
           onClose={() => setShowHelp(false)} 
         />
       )}
+      
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
+      
+      {/* Payment Modal */}
+      {user && (
+        <PaymentModal 
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={handlePaymentSuccess}
+          currentBalance={user.token_balance}
+        />
+      )}
+      
+      {/* Token Limit Modal */}
+      <TokenLimitModal 
+        isOpen={showTokenLimitModal}
+        onClose={() => setShowTokenLimitModal(false)}
+        onRegister={handleTokenLimitRegister}
+        onBuyCredits={handleTokenLimitBuyCredits}
+        limitType={tokenLimitInfo.type}
+        message={tokenLimitInfo.message}
+        currentBalance={tokenLimitInfo.currentBalance}
+        requiredTokens={tokenLimitInfo.requiredTokens}
+        isRegistered={!!user}
+      />
     </div>
   );
 }

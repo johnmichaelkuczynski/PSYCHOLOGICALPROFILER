@@ -7,10 +7,16 @@ import { generateWordDocument, generatePdfDocument } from "./documentGenerator";
 import { sendEmail } from "./emailService";
 import { generateComprehensiveReport } from "./ai/comprehensiveReport";
 import { generateComprehensivePsychologicalReport } from "./ai/psychologicalComprehensiveReport";
+import { AuthService } from "./auth";
+import { TokenService } from "./tokenService";
+import { StripeService } from "./stripeService";
+import { authMiddleware, requireAuth, checkTokenLimits, checkFileUploadPermissions, type AuthenticatedRequest } from "./middleware";
 import multer from "multer";
 import { z } from "zod";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import session from "express-session";
+import cookieParser from "cookie-parser";
 
 const analyzeRequestSchema = z.object({
   text: z.string().min(100, "Text must be at least 100 characters long"),
@@ -19,6 +25,22 @@ const analyzeRequestSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure session middleware
+  app.use(cookieParser());
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    },
+  }));
+
+  // Apply auth middleware to all routes
+  app.use(authMiddleware);
+
   // Configure multer for file uploads
   const upload = multer({
     storage: multer.memoryStorage(),
@@ -27,14 +49,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   });
 
+  // Authentication routes
+  app.post("/api/auth/register", async (req: AuthenticatedRequest, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+      }
+
+      const authResult = await AuthService.register(email, password);
+      const sessionUser = AuthService.toSessionUser(authResult.user);
+      
+      // Store user in session
+      req.session!.user = sessionUser;
+      
+      res.json({ 
+        user: sessionUser,
+        message: 'Registration successful' 
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(400).json({ 
+        error: error instanceof Error ? error.message : 'Registration failed' 
+      });
+    }
+  });
+
+  app.post("/api/auth/login", async (req: AuthenticatedRequest, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+      }
+
+      const authResult = await AuthService.login(email, password);
+      const sessionUser = AuthService.toSessionUser(authResult.user);
+      
+      // Store user in session
+      req.session!.user = sessionUser;
+      
+      res.json({ 
+        user: sessionUser,
+        message: 'Login successful' 
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(401).json({ 
+        error: error instanceof Error ? error.message : 'Login failed' 
+      });
+    }
+  });
+
+  app.post("/api/auth/logout", (req: AuthenticatedRequest, res) => {
+    req.session?.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      res.json({ message: 'Logout successful' });
+    });
+  });
+
+  app.get("/api/auth/me", (req: AuthenticatedRequest, res) => {
+    if (req.user) {
+      res.json({ user: req.user });
+    } else {
+      res.json({ user: null });
+    }
+  });
+
+  // Payment routes
+  app.post("/api/payments/create-intent", requireAuth, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { amount, tokens } = req.body;
+      
+      if (!amount || !tokens || !req.user) {
+        return res.status(400).json({ error: 'Amount and tokens are required' });
+      }
+
+      const paymentIntent = await StripeService.createPaymentIntent({
+        amount,
+        tokens,
+        userId: req.user.id,
+      });
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id 
+      });
+    } catch (error) {
+      console.error('Payment intent creation error:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Payment creation failed' 
+      });
+    }
+  });
+
+  app.get("/api/payments/pricing", (req, res) => {
+    res.json({ pricing: StripeService.getTokenPricing() });
+  });
+
+  app.post("/api/payments/webhook", async (req, res) => {
+    const sig = req.headers['stripe-signature'] as string;
+    
+    try {
+      const event = StripeService.verifyWebhookSignature(req.body, sig);
+      
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          await StripeService.handleSuccessfulPayment(event.data.object.id);
+          break;
+        case 'payment_intent.payment_failed':
+          await StripeService.handleFailedPayment(event.data.object.id);
+          break;
+      }
+      
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Webhook error:', error);
+      res.status(400).json({ error: 'Webhook signature verification failed' });
+    }
+  });
+
   // Analysis endpoint - using all providers
-  app.post("/api/analyze-all", async (req, res) => {
+  app.post("/api/analyze-all", checkTokenLimits, async (req: AuthenticatedRequest, res) => {
     try {
       // Validate request body
       const { text, analysisType } = analyzeRequestSchema.omit({ modelProvider: true }).parse(req.body);
       
+      // Calculate token usage (estimate for all providers)
+      const estimatedTokens = req.estimatedTokens! * 4; // All 4 providers
+      
       // Call all AI APIs and get combined results
       const analyses = await analyzeTextWithAllProviders(text, analysisType);
+      
+      // Deduct tokens after successful analysis
+      if (req.user) {
+        await TokenService.deductRegisteredUserTokens(
+          req.user.id,
+          estimatedTokens,
+          'analysis',
+          `Multi-provider ${analysisType} analysis`
+        );
+      } else {
+        await TokenService.deductAnonymousTokens(
+          req.sessionId!,
+          estimatedTokens,
+          `Multi-provider ${analysisType} analysis`
+        );
+      }
       
       // Return all analysis results
       res.json(analyses);
@@ -55,16 +219,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Analysis endpoint - single provider
-  app.post("/api/analyze", async (req, res) => {
+  app.post("/api/analyze", checkTokenLimits, async (req: AuthenticatedRequest, res) => {
     try {
       // Validate request body
       const { text, modelProvider, analysisType } = analyzeRequestSchema.parse(req.body);
       
+      // Get estimated tokens
+      const estimatedTokens = req.estimatedTokens!;
+      
       // Call appropriate AI API based on selected provider and analysis type
       const analysis = await analyzeText(text, modelProvider, analysisType);
       
+      // Check if we need to truncate results for free users who exceeded input limits
+      let finalAnalysis = analysis;
+      const isPartialResult = req.body.allowPartial === true;
+      
+      if (isPartialResult && !req.user) {
+        finalAnalysis = TokenService.truncateResult(analysis);
+      }
+      
+      // Deduct tokens after successful analysis
+      if (req.user) {
+        await TokenService.deductRegisteredUserTokens(
+          req.user.id,
+          estimatedTokens,
+          'analysis',
+          `${modelProvider} ${analysisType} analysis`
+        );
+      } else {
+        await TokenService.deductAnonymousTokens(
+          req.sessionId!,
+          estimatedTokens,
+          `${modelProvider} ${analysisType} analysis`
+        );
+      }
+      
       // Return the analysis result
-      res.json(analysis);
+      res.json(finalAnalysis);
     } catch (error) {
       console.error(`Error analyzing text (${req.body.analysisType || 'cognitive'}):`, error);
       
@@ -82,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload endpoint for document analysis with all providers
-  app.post("/api/upload-document-all", upload.single('file'), async (req, res) => {
+  app.post("/api/upload-document-all", checkFileUploadPermissions, upload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -100,9 +291,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "The extracted text is too short. Please upload a document with more content (minimum 100 characters)." 
         });
       }
+
+      // Calculate upload cost and check user tokens
+      const wordCount = extractedText.split(/\s+/).length;
+      const uploadCost = TokenService.calculateUploadCost(wordCount);
+      const analysisTokens = TokenService.estimateTokens(extractedText) * 4; // All providers
+      const totalCost = uploadCost + analysisTokens;
+
+      // Check if user has enough tokens
+      const { canProceed, currentBalance } = await TokenService.checkRegisteredUserTokens(
+        req.user!.id,
+        totalCost
+      );
+
+      if (!canProceed) {
+        return res.status(402).json({
+          error: 'insufficient_tokens',
+          message: "You've used all your credits. [Buy More Credits]",
+          currentBalance,
+          requiredTokens: totalCost,
+          breakdown: {
+            uploadCost,
+            analysisTokens,
+            wordCount,
+          }
+        });
+      }
+
+      // Deduct upload cost first
+      await TokenService.deductRegisteredUserTokens(
+        req.user!.id,
+        uploadCost,
+        'upload',
+        `Document upload: ${req.file.originalname} (${wordCount} words)`
+      );
+
+      // Store document in database
+      await storage.createDocument({
+        user_id: req.user!.id,
+        filename: req.file.originalname,
+        content: extractedText,
+        word_count: wordCount,
+      });
       
       // Analyze the extracted text using all AI providers
       const analyses = await analyzeTextWithAllProviders(extractedText, analysisType);
+
+      // Deduct analysis tokens
+      await TokenService.deductRegisteredUserTokens(
+        req.user!.id,
+        analysisTokens,
+        'analysis',
+        `Multi-provider document analysis: ${req.file.originalname}`
+      );
       
       // Return all analysis results
       res.json(analyses);
@@ -114,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload endpoint for document analysis (single provider)
-  app.post("/api/upload-document", upload.single('file'), async (req, res) => {
+  app.post("/api/upload-document", checkFileUploadPermissions, upload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -133,9 +374,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "The extracted text is too short. Please upload a document with more content (minimum 100 characters)." 
         });
       }
+
+      // Calculate upload cost and check user tokens
+      const wordCount = extractedText.split(/\s+/).length;
+      const uploadCost = TokenService.calculateUploadCost(wordCount);
+      const analysisTokens = TokenService.estimateTokens(extractedText);
+      const totalCost = uploadCost + analysisTokens;
+
+      // Check if user has enough tokens
+      const { canProceed, currentBalance } = await TokenService.checkRegisteredUserTokens(
+        req.user!.id,
+        totalCost
+      );
+
+      if (!canProceed) {
+        return res.status(402).json({
+          error: 'insufficient_tokens',
+          message: "You've used all your credits. [Buy More Credits]",
+          currentBalance,
+          requiredTokens: totalCost,
+          breakdown: {
+            uploadCost,
+            analysisTokens,
+            wordCount,
+          }
+        });
+      }
+
+      // Deduct upload cost first
+      await TokenService.deductRegisteredUserTokens(
+        req.user!.id,
+        uploadCost,
+        'upload',
+        `Document upload: ${req.file.originalname} (${wordCount} words)`
+      );
+
+      // Store document in database
+      await storage.createDocument({
+        user_id: req.user!.id,
+        filename: req.file.originalname,
+        content: extractedText,
+        word_count: wordCount,
+      });
       
       // Analyze the extracted text using the selected AI provider and analysis type
       const analysis = await analyzeText(extractedText, modelProvider as ModelProvider, analysisType);
+
+      // Deduct analysis tokens
+      await TokenService.deductRegisteredUserTokens(
+        req.user!.id,
+        analysisTokens,
+        'analysis',
+        `${modelProvider} document analysis: ${req.file.originalname}`
+      );
       
       // Return the analysis result
       res.json(analysis);

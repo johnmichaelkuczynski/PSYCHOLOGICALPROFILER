@@ -1,0 +1,126 @@
+ REUSABLE TOKEN + PAYWALL + PAYMENT SYSTEM (FINALIZED PROTOCOL)
+Implement this system exactly. It has been finalized and tested in other apps. Do not modify anything.
+
+🔓 FREE USER ACCESS (LIMITED USAGE — ONE-TIME)
+Unregistered users may use the app with strict token limits:
+
+Input token limit: ≤500 tokens
+
+Output token limit: ≤300 tokens
+
+Lifetime cap (input + output): 1,000 tokens total
+
+Once this limit is hit:
+
+Block all usage
+
+Show:
+
+🔒 You’ve reached the free usage limit. [Register & Unlock Full Access]
+
+If a submission exceeds the input/output cap:
+
+Show only a partial result (e.g., one-line grade or excerpt)
+
+Display this prompt:
+
+🔒 Full results available with upgrade. [Register & Unlock Full Access]
+
+🔑 REGISTERED USERS + CREDIT SYSTEM
+Users register with email + password (no email verification required)
+
+After login, show “Buy Credits” button
+
+💳 STRIPE CREDIT PURCHASE OPTIONS
+$1 → 2,000 tokens
+
+$10 → 30,000 tokens
+
+$100 → 600,000 tokens
+
+$1,000 → 10,000,000 tokens
+
+After payment:
+
+Instantly update the user’s token balance
+
+Store token balance in database keyed to user’s email
+
+If user has 0 tokens:
+
+Block access and show:
+
+🔒 You’ve used all your credits. [Buy More Credits]
+
+📄 DOCUMENT UPLOAD + STORAGE PRICING (REGISTERED USERS ONLY)
+Free users cannot upload files. If they try:
+
+🔒 File uploads require registration and credits. [Register & Unlock]
+
+📤 ONE-TIME UPLOAD COST
+When a registered user uploads a document (PDF, DOCX, TXT):
+
+Estimate word count
+
+Charge 1 token per 100 words, rounded up
+
+Minimum charge: 100 tokens
+
+Maximum charge: 10,000 tokens
+
+Deduct silently from user's token balance at time of upload
+
+🗄️ MONTHLY STORAGE COST
+To store uploaded documents:
+
+Charge 1 token per 250 words per month
+
+Auto-deduct silently each month
+
+If user has no tokens remaining → lock access to document
+
+Show prompt:
+
+🔒 File storage is paused until credits are added. [Buy More Credits]
+
+🧠 SYSTEM REQUIREMENTS
+Track and log every token event with:
+
+Timestamp
+
+User/session ID
+
+Token count used
+
+Remaining token balance
+
+Other system requirements:
+
+Auth must persist across page reloads
+
+Page refresh must not log out user
+
+Logged-in users must never be forced to re-login
+
+✅ TEST CASES (REQUIRED BEFORE “DONE”)
+Submit large input as unregistered user → partial result + upgrade prompt
+
+Hit 1,000-token lifetime cap as free user → usage blocked + upgrade prompt
+
+Register and purchase credits → balance updated
+
+Upload document → correct token deduction
+
+Refresh page → user stays logged in
+
+Only mark task complete if all 5 test cases visibly pass.
+
+
+
+
+
+
+
+
+
+Ask ChatGPT

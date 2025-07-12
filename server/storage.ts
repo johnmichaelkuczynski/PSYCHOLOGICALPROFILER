@@ -6,6 +6,9 @@ import {
   documents, 
   analysisRequests, 
   comprehensiveReports,
+  tokenUsage,
+  payments,
+  anonymousSessions,
   type User, 
   type InsertUser,
   type Document,
@@ -13,7 +16,13 @@ import {
   type AnalysisRequest,
   type InsertAnalysisRequest,
   type ComprehensiveReport,
-  type InsertComprehensiveReport
+  type InsertComprehensiveReport,
+  type TokenUsage,
+  type InsertTokenUsage,
+  type Payment,
+  type InsertPayment,
+  type AnonymousSession,
+  type InsertAnonymousSession
 } from "@shared/schema";
 
 // Database connection with proper error handling
@@ -44,6 +53,21 @@ export interface IStorage {
   getUserComprehensiveReports(userId: string): Promise<ComprehensiveReport[]>;
   createComprehensiveReport(report: InsertComprehensiveReport): Promise<ComprehensiveReport>;
   getComprehensiveReport(id: string, userId: string): Promise<ComprehensiveReport | undefined>;
+  
+  // Token usage tracking
+  createTokenUsage(usage: InsertTokenUsage): Promise<TokenUsage>;
+  getUserTokenUsage(userId: string): Promise<TokenUsage[]>;
+  getSessionTokenUsage(sessionId: string): Promise<TokenUsage[]>;
+  
+  // Payment management
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  updatePaymentStatus(paymentIntentId: string, status: string): Promise<void>;
+  getUserPayments(userId: string): Promise<Payment[]>;
+  
+  // Anonymous session management
+  getAnonymousSession(sessionId: string): Promise<AnonymousSession | undefined>;
+  createAnonymousSession(session: InsertAnonymousSession): Promise<AnonymousSession>;
+  updateAnonymousSessionTokens(sessionId: string, tokensUsed: number): Promise<void>;
 }
 
 export class NeonStorage implements IStorage {
@@ -131,6 +155,54 @@ export class NeonStorage implements IStorage {
     const result = await db.select().from(comprehensiveReports)
       .where(and(eq(comprehensiveReports.id, id), eq(comprehensiveReports.user_id, userId)));
     return result[0];
+  }
+
+  // Token usage tracking methods
+  async createTokenUsage(usage: InsertTokenUsage): Promise<TokenUsage> {
+    const result = await db.insert(tokenUsage).values(usage).returning();
+    return result[0];
+  }
+
+  async getUserTokenUsage(userId: string): Promise<TokenUsage[]> {
+    return await db.select().from(tokenUsage).where(eq(tokenUsage.user_id, userId));
+  }
+
+  async getSessionTokenUsage(sessionId: string): Promise<TokenUsage[]> {
+    return await db.select().from(tokenUsage).where(eq(tokenUsage.session_id, sessionId));
+  }
+
+  // Payment management methods
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const result = await db.insert(payments).values(payment).returning();
+    return result[0];
+  }
+
+  async updatePaymentStatus(paymentIntentId: string, status: string): Promise<void> {
+    await db.update(payments)
+      .set({ status })
+      .where(eq(payments.stripe_payment_intent_id, paymentIntentId));
+  }
+
+  async getUserPayments(userId: string): Promise<Payment[]> {
+    return await db.select().from(payments).where(eq(payments.user_id, userId));
+  }
+
+  // Anonymous session management methods
+  async getAnonymousSession(sessionId: string): Promise<AnonymousSession | undefined> {
+    const result = await db.select().from(anonymousSessions)
+      .where(eq(anonymousSessions.session_id, sessionId));
+    return result[0];
+  }
+
+  async createAnonymousSession(session: InsertAnonymousSession): Promise<AnonymousSession> {
+    const result = await db.insert(anonymousSessions).values(session).returning();
+    return result[0];
+  }
+
+  async updateAnonymousSessionTokens(sessionId: string, tokensUsed: number): Promise<void> {
+    await db.update(anonymousSessions)
+      .set({ tokens_used: tokensUsed, last_activity: new Date() })
+      .where(eq(anonymousSessions.session_id, sessionId));
   }
 }
 
@@ -252,6 +324,67 @@ export class MemStorage implements IStorage {
   async getComprehensiveReport(id: string, userId: string): Promise<ComprehensiveReport | undefined> {
     const rep = this.comprehensiveReports.get(id);
     return rep && rep.user_id === userId ? rep : undefined;
+  }
+
+  // Token usage tracking methods (in-memory implementation)
+  async createTokenUsage(usage: InsertTokenUsage): Promise<TokenUsage> {
+    const id = crypto.randomUUID();
+    const newUsage: TokenUsage = {
+      ...usage,
+      id,
+      created_at: new Date()
+    };
+    // In memory, we don't persist token usage for simplicity
+    return newUsage;
+  }
+
+  async getUserTokenUsage(userId: string): Promise<TokenUsage[]> {
+    return []; // In-memory storage doesn't persist usage history
+  }
+
+  async getSessionTokenUsage(sessionId: string): Promise<TokenUsage[]> {
+    return []; // In-memory storage doesn't persist usage history
+  }
+
+  // Payment management methods (in-memory implementation)
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const id = crypto.randomUUID();
+    const newPayment: Payment = {
+      ...payment,
+      id,
+      created_at: new Date()
+    };
+    // In memory, we don't persist payments
+    return newPayment;
+  }
+
+  async updatePaymentStatus(paymentIntentId: string, status: string): Promise<void> {
+    // In-memory implementation doesn't persist payment status
+  }
+
+  async getUserPayments(userId: string): Promise<Payment[]> {
+    return []; // In-memory storage doesn't persist payments
+  }
+
+  // Anonymous session management methods (in-memory implementation)
+  async getAnonymousSession(sessionId: string): Promise<AnonymousSession | undefined> {
+    // For simplicity, create a new session with 0 tokens used
+    return undefined;
+  }
+
+  async createAnonymousSession(session: InsertAnonymousSession): Promise<AnonymousSession> {
+    const id = crypto.randomUUID();
+    const newSession: AnonymousSession = {
+      ...session,
+      id,
+      created_at: new Date(),
+      last_activity: new Date()
+    };
+    return newSession;
+  }
+
+  async updateAnonymousSessionTokens(sessionId: string, tokensUsed: number): Promise<void> {
+    // In-memory implementation doesn't persist session tokens
   }
 }
 
