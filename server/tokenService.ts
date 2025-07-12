@@ -22,7 +22,8 @@ export class TokenService {
    * Estimate tokens needed for text (rough estimate)
    */
   static estimateTokens(text: string): number {
-    return Math.ceil(text.length / 4); // Rough estimate: 4 chars per token
+    // More conservative estimate: 1 token per 3 characters
+    return Math.ceil(text.length / 3);
   }
 
   /**
