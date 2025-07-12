@@ -173,32 +173,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analysis endpoint - using all providers
-  app.post("/api/analyze-all", checkTokenLimits, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/analyze-all", async (req: AuthenticatedRequest, res) => {
     try {
       // Validate request body
       const { text, analysisType } = analyzeRequestSchema.omit({ modelProvider: true }).parse(req.body);
       
-      // Calculate token usage (estimate for all providers)
-      const estimatedTokens = req.estimatedTokens! * 4; // All 4 providers
-      
       // Call all AI APIs and get combined results
       const analyses = await analyzeTextWithAllProviders(text, analysisType);
-      
-      // Deduct tokens after successful analysis
-      if (req.user) {
-        await TokenService.deductRegisteredUserTokens(
-          req.user.id,
-          estimatedTokens,
-          'analysis',
-          `Multi-provider ${analysisType} analysis`
-        );
-      } else {
-        await TokenService.deductAnonymousTokens(
-          req.sessionId!,
-          estimatedTokens,
-          `Multi-provider ${analysisType} analysis`
-        );
-      }
       
       // Return all analysis results
       res.json(analyses);
@@ -219,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Analysis endpoint - single provider
-  app.post("/api/analyze", checkTokenLimits, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/analyze", async (req: AuthenticatedRequest, res) => {
     try {
       // Validate request body
       const { text, modelProvider, analysisType } = analyzeRequestSchema.parse(req.body);
@@ -273,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload endpoint for document analysis with all providers
-  app.post("/api/upload-document-all", checkFileUploadPermissions, upload.single('file'), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/upload-document-all", upload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -292,58 +273,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Calculate upload cost and check user tokens
-      const wordCount = extractedText.split(/\s+/).length;
-      const uploadCost = TokenService.calculateUploadCost(wordCount);
-      const analysisTokens = TokenService.estimateTokens(extractedText) * 4; // All providers
-      const totalCost = uploadCost + analysisTokens;
-
-      // Check if user has enough tokens
-      const { canProceed, currentBalance } = await TokenService.checkRegisteredUserTokens(
-        req.user!.id,
-        totalCost
-      );
-
-      if (!canProceed) {
-        return res.status(402).json({
-          error: 'insufficient_tokens',
-          message: "You've used all your credits. [Buy More Credits]",
-          currentBalance,
-          requiredTokens: totalCost,
-          breakdown: {
-            uploadCost,
-            analysisTokens,
-            wordCount,
-          }
-        });
-      }
-
-      // Deduct upload cost first
-      await TokenService.deductRegisteredUserTokens(
-        req.user!.id,
-        uploadCost,
-        'upload',
-        `Document upload: ${req.file.originalname} (${wordCount} words)`
-      );
-
-      // Store document in database
-      await storage.createDocument({
-        user_id: req.user!.id,
-        filename: req.file.originalname,
-        content: extractedText,
-        word_count: wordCount,
-      });
-      
       // Analyze the extracted text using all AI providers
       const analyses = await analyzeTextWithAllProviders(extractedText, analysisType);
-
-      // Deduct analysis tokens
-      await TokenService.deductRegisteredUserTokens(
-        req.user!.id,
-        analysisTokens,
-        'analysis',
-        `Multi-provider document analysis: ${req.file.originalname}`
-      );
       
       // Return all analysis results
       res.json(analyses);
@@ -355,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload endpoint for document analysis (single provider)
-  app.post("/api/upload-document", checkFileUploadPermissions, upload.single('file'), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/upload-document", upload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });

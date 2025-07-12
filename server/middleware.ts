@@ -90,26 +90,22 @@ export async function checkTokenLimits(req: AuthenticatedRequest, res: Response,
     } else {
       // Anonymous user - check free limits
       const sessionId = req.sessionId!;
-      const estimate = await TokenService.checkAnonymousLimits(sessionId, text);
+      const { canProceed, tokensUsed, remainingTokens, requiredTokens } = await TokenService.checkAnonymousLimits(
+        sessionId,
+        text
+      );
       
-      if (estimate.exceedsLimit) {
-        let message = '';
-        if (estimate.limitType === 'total') {
-          message = "You've reached the free usage limit. [Register & Unlock Full Access]";
-        } else {
-          message = "Full results available with upgrade. [Register & Unlock Full Access]";
-        }
-        
+      if (!canProceed) {
         return res.status(402).json({
           error: 'free_limit_exceeded',
-          message,
-          limitType: estimate.limitType,
-          tokens: estimate.tokens,
-          allowPartial: estimate.limitType !== 'total',
+          message: "You've reached the free usage limit. [Register & Unlock Full Access]",
+          tokensUsed,
+          remainingTokens,
+          requiredTokens,
         });
       }
       
-      req.estimatedTokens = estimate.tokens;
+      req.estimatedTokens = requiredTokens;
     }
     
     next();

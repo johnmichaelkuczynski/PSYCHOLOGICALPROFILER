@@ -152,4 +152,26 @@ export class TokenService {
       canUpload: true,
     };
   }
+
+  /**
+   * Check anonymous user limits (missing function)
+   */
+  static async checkAnonymousLimits(sessionId: string, text: string): Promise<{
+    canProceed: boolean;
+    tokensUsed: number;
+    remainingTokens: number;
+    requiredTokens: number;
+  }> {
+    const requiredTokens = this.estimateTokens(text);
+    const session = await storage.getAnonymousSession(sessionId);
+    const tokensUsed = session?.tokens_used || 0;
+    const remainingTokens = this.FREE_TOKEN_LIMIT - tokensUsed;
+    
+    return {
+      canProceed: remainingTokens >= requiredTokens,
+      tokensUsed,
+      remainingTokens,
+      requiredTokens,
+    };
+  }
 }
