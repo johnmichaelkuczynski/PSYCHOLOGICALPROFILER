@@ -10,7 +10,7 @@ import { generateComprehensivePsychologicalReport } from "./ai/psychologicalComp
 import { AuthService } from "./auth";
 import { TokenService } from "./tokenService";
 import { StripeService } from "./stripeService";
-import { authMiddleware, requireAuth, checkTokenLimits, checkFileUploadPermissions, type AuthenticatedRequest } from "./middleware";
+import { authMiddleware, requireAuth, checkFreeTokenLimits, checkRegisteredTokenLimits, checkFileUploadPermissions, type AuthenticatedRequest } from "./middleware";
 import multer from "multer";
 import { z } from "zod";
 import { ZodError } from "zod";
@@ -173,13 +173,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analysis endpoint - using all providers
-  app.post("/api/analyze-all", async (req: AuthenticatedRequest, res) => {
+  app.post("/api/analyze-all", checkFreeTokenLimits, checkRegisteredTokenLimits, async (req: AuthenticatedRequest, res) => {
     try {
       // Validate request body
       const { text, analysisType } = analyzeRequestSchema.omit({ modelProvider: true }).parse(req.body);
       
+      // Estimate tokens for analysis
+      const inputTokens = TokenService.estimateTokens(text);
+      const outputTokens = inputTokens * 0.8; // Rough estimate for output
+      const totalTokens = inputTokens + outputTokens;
+      
       // Call all AI APIs and get combined results
       const analyses = await analyzeTextWithAllProviders(text, analysisType);
+      
+      // Deduct tokens after successful analysis
+      if (req.user) {
+        await TokenService.deductRegisteredUserTokens(
+          req.user.id,
+          totalTokens,
+          'analysis',
+          `Multi-provider ${analysisType} analysis`
+        );
+      } else if (req.sessionId) {
+        await TokenService.deductFreeUserTokens(
+          req.sessionId,
+          totalTokens,
+          `Multi-provider ${analysisType} analysis`
+        );
+      }
       
       // Return all analysis results
       res.json(analyses);
@@ -200,43 +221,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Analysis endpoint - single provider
-  app.post("/api/analyze", async (req: AuthenticatedRequest, res) => {
+  app.post("/api/analyze", checkFreeTokenLimits, checkRegisteredTokenLimits, async (req: AuthenticatedRequest, res) => {
     try {
       // Validate request body
       const { text, modelProvider, analysisType } = analyzeRequestSchema.parse(req.body);
       
-      // Get estimated tokens
-      const estimatedTokens = req.estimatedTokens!;
+      // Estimate tokens for analysis
+      const inputTokens = TokenService.estimateTokens(text);
+      const outputTokens = inputTokens * 0.8; // Rough estimate for output
+      const totalTokens = inputTokens + outputTokens;
       
       // Call appropriate AI API based on selected provider and analysis type
       const analysis = await analyzeText(text, modelProvider, analysisType);
-      
-      // Check if we need to truncate results for free users who exceeded input limits
-      let finalAnalysis = analysis;
-      const isPartialResult = req.body.allowPartial === true;
-      
-      if (isPartialResult && !req.user) {
-        finalAnalysis = TokenService.truncateResult(analysis);
-      }
       
       // Deduct tokens after successful analysis
       if (req.user) {
         await TokenService.deductRegisteredUserTokens(
           req.user.id,
-          estimatedTokens,
+          totalTokens,
           'analysis',
           `${modelProvider} ${analysisType} analysis`
         );
-      } else {
-        await TokenService.deductAnonymousTokens(
-          req.sessionId!,
-          estimatedTokens,
+      } else if (req.sessionId) {
+        await TokenService.deductFreeUserTokens(
+          req.sessionId,
+          totalTokens,
           `${modelProvider} ${analysisType} analysis`
         );
       }
       
       // Return the analysis result
-      res.json(finalAnalysis);
+      res.json(analysis);
     } catch (error) {
       console.error(`Error analyzing text (${req.body.analysisType || 'cognitive'}):`, error);
       

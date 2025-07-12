@@ -1,0 +1,158 @@
+ FINALIZED PAYWALL + CREDITS + STORAGE + DATABASE SYSTEM (UNIFIED INSTRUCTIONS)
+Implement this protocol exactly, without changes. It has been finalized and tested in multiple apps. Apply across the entire app.
+
+🔓 FREE USER ACCESS (LIMITED USAGE — ONE-TIME)
+Free (unregistered) users can:
+
+Submit ≤500 tokens input per request
+
+Receive ≤300 tokens output per request
+
+Use up to 1,000 total tokens (input + output)
+
+Upload a file for immediate use (not for storage)
+
+Upload cost for free users:
+
+1 token per 100 words (rounded up)
+
+Minimum: 100 tokens
+
+Maximum: 1,000 tokens
+
+Deducted from free token quota
+
+Free users cannot store documents beyond the session
+
+When a free user exceeds their 1,000 token limit:
+
+Block further use
+
+Show:
+🔒 You’ve reached the free usage limit. [Register & Unlock Full Access]
+
+If a submission exceeds allowed input/output:
+
+Show partial result (e.g., preview, short response)
+
+Show:
+🔒 Full results available with upgrade. [Register & Unlock Full Access]
+
+🔑 REGISTERED USERS + CREDIT SYSTEM
+Users register with email + password
+
+After login, show Buy Credits option
+
+💳 STRIPE CREDIT PURCHASE TIERS
+$1 → 2,000 tokens
+
+$10 → 30,000 tokens
+
+$100 → 600,000 tokens
+
+$1,000 → 10,000,000 tokens
+
+After payment:
+
+Instantly update token balance in database (keyed to email)
+
+When balance = 0:
+
+Block usage
+
+Show:
+🔒 You’ve used all your credits. [Buy More Credits]
+
+📤 DOCUMENT UPLOAD + STORAGE (REGISTERED USERS ONLY)
+Upload cost (one-time, per file):
+
+1 token per 100 words
+
+Min: 100 tokens
+
+Max: 10,000 tokens
+
+Deduct on upload
+
+Storage cost (auto-recurring, monthly):
+
+1 token per 250 words per month
+
+Deduct monthly
+
+If user has 0 tokens → lock access to file
+
+Show:
+🔒 File storage is paused until credits are added. [Buy More Credits]
+
+Registered users may delete files anytime
+
+🧠 SYSTEM REQUIREMENTS
+Track all token activity:
+
+Timestamp
+
+User/session ID
+
+Token amount used
+
+Remaining balance
+
+Auth must persist on page reload
+
+Logged-in users must stay logged in
+
+Do not redirect logged-in users to login/register again
+
+🗄️ NEON DATABASE SETUP (SHARED, ISOLATED)
+Create a single shared Neon database
+
+Tables:
+
+sql
+Copy
+Edit
+-- Users
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  token_balance INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Documents
+CREATE TABLE documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  filename TEXT NOT NULL,
+  content TEXT NOT NULL,
+  word_count INTEGER,
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+All queries must filter by user_id
+
+Never expose another user’s data
+
+No document is visible unless it belongs to logged-in user
+
+Enforce this both on frontend and backend
+
+Validate session and extract user_id for every DB call
+
+✅ TEST CASES (MUST PASS BEFORE DONE)
+Free user hits 1,000 token limit → blocked + upgrade prompt
+
+Free user uploads file → gets charged, can use once
+
+Registered user buys credits → balance updated instantly
+
+Registered user uploads → token deducted, file stored
+
+Storage charges applied monthly → file access locked if unpaid
+
+Two users created → each sees only their own files
+
+Page refresh → logged-in user remains logged in
+
+URL manipulation or dev tools → cannot leak other users’ data

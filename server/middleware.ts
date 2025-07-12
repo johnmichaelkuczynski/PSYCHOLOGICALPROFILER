@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from './auth';
+import { storage } from './storage';
 import { TokenService } from './tokenService';
 
 export interface AuthenticatedRequest extends Request {
@@ -7,8 +7,6 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     email: string;
     token_balance: number;
-    is_registered: boolean;
-    free_tokens_used: number;
   };
   sessionId?: string;
 }
@@ -18,30 +16,43 @@ export interface AuthenticatedRequest extends Request {
  */
 export async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    // Check for user session (registered users)
-    const userSession = req.session?.user;
-    
-    if (userSession) {
-      req.user = userSession;
-    } else {
-      // Handle anonymous users with session ID
-      let sessionId = req.session?.anonymousId;
+    // Check if user is logged in via session
+    if (req.session && req.session.userId) {
+      const user = await storage.getUser(req.session.userId);
+      if (user) {
+        req.user = {
+          id: user.id,
+          email: user.email,
+          token_balance: user.token_balance || 0,
+        };
+      }
+    }
+
+    // If no user, create or get anonymous session
+    if (!req.user) {
+      let sessionId = req.session?.sessionId;
       
       if (!sessionId) {
-        sessionId = AuthService.generateSessionId();
-        req.session!.anonymousId = sessionId;
+        sessionId = generateSessionId();
+        if (req.session) {
+          req.session.sessionId = sessionId;
+        }
       }
       
       req.sessionId = sessionId;
       
-      // Create or get anonymous session
-      await AuthService.getOrCreateAnonymousSession(
-        sessionId,
-        req.ip,
-        req.get('User-Agent')
-      );
+      // Ensure anonymous session exists
+      const existingSession = await storage.getAnonymousSession(sessionId);
+      if (!existingSession) {
+        await storage.createAnonymousSession({
+          session_id: sessionId,
+          tokens_used: 0,
+          ip_address: req.ip,
+          user_agent: req.get('User-Agent') || '',
+        });
+      }
     }
-    
+
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
@@ -55,62 +66,89 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
 export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   if (!req.user) {
     return res.status(401).json({ 
-      error: 'Authentication required',
-      message: 'Please register or login to access this feature'
+      error: 'authentication_required',
+      message: 'Please register or log in to access this feature.' 
     });
   }
   next();
 }
 
 /**
- * Middleware to check token limits for anonymous users
+ * Middleware to check token limits for free users
  */
-export async function checkTokenLimits(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function checkFreeTokenLimits(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { text } = req.body;
-    
+    // Skip if user is registered
     if (req.user) {
-      // Registered user - check token balance
-      const requiredTokens = TokenService.estimateTokens(text);
-      const { canProceed, currentBalance } = await TokenService.checkRegisteredUserTokens(
-        req.user.id,
-        requiredTokens
-      );
-      
-      if (!canProceed) {
-        return res.status(402).json({
-          error: 'insufficient_tokens',
-          message: "You've used all your credits. [Buy More Credits]",
-          currentBalance,
-          requiredTokens,
-        });
-      }
-      
-      req.estimatedTokens = requiredTokens;
-    } else {
-      // Anonymous user - check free limits
-      const sessionId = req.sessionId!;
-      const { canProceed, tokensUsed, remainingTokens, requiredTokens } = await TokenService.checkAnonymousLimits(
-        sessionId,
-        text
-      );
-      
-      if (!canProceed) {
-        return res.status(402).json({
-          error: 'free_limit_exceeded',
-          message: "You've reached the free usage limit. [Register & Unlock Full Access]",
-          tokensUsed,
-          remainingTokens,
-          requiredTokens,
-        });
-      }
-      
-      req.estimatedTokens = requiredTokens;
+      return next();
     }
-    
+
+    // Get text from request
+    const text = req.body.text || '';
+    const inputTokens = TokenService.estimateTokens(text);
+    const outputTokens = TokenService.estimateTokens(text) * 0.5; // Rough estimate
+
+    const sessionId = req.sessionId;
+    if (!sessionId) {
+      return res.status(400).json({ 
+        error: 'session_required',
+        message: 'Session required' 
+      });
+    }
+
+    const { canProceed, tokensUsed, message } = await TokenService.checkFreeUserLimits(
+      sessionId,
+      inputTokens,
+      outputTokens
+    );
+
+    if (!canProceed) {
+      return res.status(402).json({
+        error: 'token_limit_exceeded',
+        message: message || 'Free token limit exceeded',
+        tokensUsed,
+        limit: TokenService.FREE_TOKEN_LIMIT,
+      });
+    }
+
     next();
   } catch (error) {
     console.error('Token limit check error:', error);
+    next(error);
+  }
+}
+
+/**
+ * Middleware to check token limits for registered users
+ */
+export async function checkRegisteredTokenLimits(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    // Skip if user is not registered
+    if (!req.user) {
+      return next();
+    }
+
+    // Get text from request
+    const text = req.body.text || '';
+    const estimatedTokens = TokenService.estimateTokens(text);
+
+    const { canProceed, currentBalance, message } = await TokenService.checkRegisteredUserTokens(
+      req.user.id,
+      estimatedTokens
+    );
+
+    if (!canProceed) {
+      return res.status(402).json({
+        error: 'insufficient_tokens',
+        message: message || 'Insufficient tokens',
+        currentBalance,
+        requiredTokens: estimatedTokens,
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Registered token limit check error:', error);
     next(error);
   }
 }
@@ -120,15 +158,15 @@ export async function checkTokenLimits(req: AuthenticatedRequest, res: Response,
  */
 export async function checkFileUploadPermissions(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { canUpload, reason } = await TokenService.canUploadFiles(req.user?.id);
+    const { canUpload, reason } = await TokenService.canUserUploadFiles(req.user?.id, req.sessionId);
     
     if (!canUpload) {
       return res.status(403).json({
         error: 'upload_not_allowed',
-        message: reason,
+        message: reason || 'Upload not allowed',
       });
     }
-    
+
     next();
   } catch (error) {
     console.error('File upload permission check error:', error);
@@ -136,11 +174,9 @@ export async function checkFileUploadPermissions(req: AuthenticatedRequest, res:
   }
 }
 
-// Extend the global Express namespace to include our custom properties
-declare global {
-  namespace Express {
-    interface Request {
-      estimatedTokens?: number;
-    }
-  }
+/**
+ * Generate session ID for anonymous users
+ */
+function generateSessionId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }

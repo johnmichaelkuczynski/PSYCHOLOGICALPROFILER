@@ -45,7 +45,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
   const [copied, setCopied] = useState(false);
   
   // Get valid providers (excluding originalText)
-  const validProviders = Object.keys(result).filter(key => 
+  const validProviders = Object.keys(result || {}).filter(key => 
     key !== 'originalText' && key in providerInfo
   ) as ModelProvider[];
   

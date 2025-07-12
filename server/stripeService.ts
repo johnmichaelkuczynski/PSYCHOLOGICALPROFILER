@@ -78,7 +78,7 @@ export class StripeService {
    * Get token pricing options
    */
   static getTokenPricing(): Array<{ amount: number; tokens: number; description: string }> {
-    return TokenService.getTokenPricing();
+    return TokenService.PRICING_TIERS;
   }
 
   /**
