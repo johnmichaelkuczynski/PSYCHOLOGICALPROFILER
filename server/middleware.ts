@@ -86,7 +86,7 @@ export async function checkFreeTokenLimits(req: AuthenticatedRequest, res: Respo
     // Get text from request
     const text = req.body.text || '';
     const inputTokens = TokenService.estimateTokens(text);
-    const outputTokens = TokenService.estimateTokens(text) * 0.5; // Rough estimate
+    const outputTokens = Math.ceil(TokenService.estimateTokens(text) * 0.5); // Rough estimate
 
     const sessionId = req.sessionId;
     if (!sessionId) {

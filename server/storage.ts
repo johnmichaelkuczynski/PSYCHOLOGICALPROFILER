@@ -201,7 +201,7 @@ export class NeonStorage implements IStorage {
 
   async updateAnonymousSessionTokens(sessionId: string, tokensUsed: number): Promise<void> {
     await db.update(anonymousSessions)
-      .set({ tokens_used: tokensUsed, last_activity: new Date() })
+      .set({ tokens_used: Math.ceil(tokensUsed), last_activity: new Date() })
       .where(eq(anonymousSessions.session_id, sessionId));
   }
 }

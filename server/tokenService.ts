@@ -110,22 +110,24 @@ export class TokenService {
     tokensUsed: number,
     description: string
   ): Promise<void> {
+    const tokensUsedInt = Math.ceil(tokensUsed); // Ensure integer
     const session = await storage.getAnonymousSession(sessionId);
     if (!session) {
       await storage.createAnonymousSession({
         session_id: sessionId,
-        tokens_used: tokensUsed,
+        tokens_used: tokensUsedInt,
       });
     } else {
-      await storage.updateAnonymousSessionTokens(sessionId, session.tokens_used + tokensUsed);
+      const newTotal = Math.ceil((session.tokens_used || 0) + tokensUsedInt);
+      await storage.updateAnonymousSessionTokens(sessionId, newTotal);
     }
 
     // Track usage
     await storage.createTokenUsage({
       session_id: sessionId,
       event_type: 'analysis',
-      tokens_used: tokensUsed,
-      tokens_remaining: this.FREE_TOKEN_LIMIT - (session?.tokens_used || 0) - tokensUsed,
+      tokens_used: tokensUsedInt,
+      tokens_remaining: this.FREE_TOKEN_LIMIT - (session?.tokens_used || 0) - tokensUsedInt,
       description,
     });
   }
@@ -139,17 +141,18 @@ export class TokenService {
     eventType: string,
     description: string
   ): Promise<void> {
+    const tokensUsedInt = Math.ceil(tokensUsed); // Ensure integer
     const user = await storage.getUser(userId);
     if (!user) throw new Error("User not found");
 
-    const newBalance = (user.token_balance || 0) - tokensUsed;
+    const newBalance = (user.token_balance || 0) - tokensUsedInt;
     await storage.updateUserTokenBalance(userId, newBalance);
 
     // Track usage
     await storage.createTokenUsage({
       user_id: userId,
       event_type: eventType,
-      tokens_used: tokensUsed,
+      tokens_used: tokensUsedInt,
       tokens_remaining: newBalance,
       description,
     });

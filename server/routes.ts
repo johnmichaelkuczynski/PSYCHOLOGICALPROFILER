@@ -41,6 +41,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Apply auth middleware to all routes
   app.use(authMiddleware);
 
+  // Test endpoint to verify token system
+  app.post("/api/test-tokens", checkFreeTokenLimits, checkRegisteredTokenLimits, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { text } = req.body;
+      const inputTokens = TokenService.estimateTokens(text);
+      const outputTokens = Math.ceil(inputTokens * 0.8);
+      const totalTokens = inputTokens + outputTokens;
+      
+      // Simulate token deduction
+      if (req.user) {
+        await TokenService.deductRegisteredUserTokens(
+          req.user.id,
+          totalTokens,
+          'test',
+          'Token system test'
+        );
+        res.json({ 
+          success: true, 
+          userType: 'registered', 
+          tokensDeducted: totalTokens,
+          remainingBalance: req.user.token_balance - totalTokens
+        });
+      } else if (req.sessionId) {
+        await TokenService.deductFreeUserTokens(
+          req.sessionId,
+          totalTokens,
+          'Token system test'
+        );
+        res.json({ 
+          success: true, 
+          userType: 'free', 
+          tokensDeducted: totalTokens,
+          sessionId: req.sessionId
+        });
+      } else {
+        res.json({ success: false, error: 'No user or session' });
+      }
+    } catch (error) {
+      console.error('Token test error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Configure multer for file uploads
   const upload = multer({
     storage: multer.memoryStorage(),
@@ -180,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Estimate tokens for analysis
       const inputTokens = TokenService.estimateTokens(text);
-      const outputTokens = inputTokens * 0.8; // Rough estimate for output
+      const outputTokens = Math.ceil(inputTokens * 0.8); // Rough estimate for output
       const totalTokens = inputTokens + outputTokens;
       
       // Call all AI APIs and get combined results
@@ -228,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Estimate tokens for analysis
       const inputTokens = TokenService.estimateTokens(text);
-      const outputTokens = inputTokens * 0.8; // Rough estimate for output
+      const outputTokens = Math.ceil(inputTokens * 0.8); // Rough estimate for output
       const totalTokens = inputTokens + outputTokens;
       
       // Call appropriate AI API based on selected provider and analysis type
