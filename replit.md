@@ -46,12 +46,13 @@ The system is structured into distinct layers:
 - ✅ Implemented file upload restrictions and token cost calculations
 
 ### Admin User System Implementation
-- ✅ Created special admin user system for username 'jmkuczynski'
+- ✅ Created special admin user system for usernames 'jmkuczynski' and 'jmkuczynski@yahoo.com'
 - ✅ Admin can login with any password (authentication bypass)
 - ✅ Auto-registration creates admin account if doesn't exist
 - ✅ Unlimited token balance (999,999,999) with no deductions
 - ✅ All token limits and paywalls bypassed for admin user
 - ✅ Complete testing access without restrictions
+- ✅ Both username formats work seamlessly
 
 ### Frontend Architecture
 

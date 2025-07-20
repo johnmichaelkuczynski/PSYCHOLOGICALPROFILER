@@ -16,14 +16,15 @@ export interface SessionUser {
 }
 
 export class AuthService {
-  // Admin username with unlimited access
-  static readonly ADMIN_USERNAME = 'jmkuczynski';
+  // Admin usernames with unlimited access
+  static readonly ADMIN_USERNAMES = ['jmkuczynski', 'jmkuczynski@yahoo.com'];
   
   /**
    * Check if user is admin
    */
   static isAdminUser(email: string): boolean {
-    return email.toLowerCase().trim() === this.ADMIN_USERNAME.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
+    return this.ADMIN_USERNAMES.some(adminEmail => adminEmail.toLowerCase() === normalizedEmail);
   }
 
   /**
