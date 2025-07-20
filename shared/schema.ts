@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password_hash: text("password_hash").notNull(),
   token_balance: integer("token_balance").default(0),
+  is_registered: boolean("is_registered").default(false),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -15,6 +16,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password_hash: true,
   token_balance: true,
+  is_registered: true,
 });
 
 // Token usage tracking table

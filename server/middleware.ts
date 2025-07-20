@@ -128,6 +128,11 @@ export async function checkRegisteredTokenLimits(req: AuthenticatedRequest, res:
       return next();
     }
 
+    // Admin bypass - jmkuczynski always has unlimited access
+    if (req.user.email.toLowerCase() === 'jmkuczynski') {
+      return next();
+    }
+
     // Get text from request
     const text = req.body.text || '';
     const estimatedTokens = TokenService.estimateTokens(text);

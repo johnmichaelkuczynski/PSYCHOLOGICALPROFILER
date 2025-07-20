@@ -90,6 +90,15 @@ export class TokenService {
       return { canProceed: false, currentBalance: 0, message: "User not found" };
     }
 
+    // Admin user bypass - always has unlimited tokens
+    if (user.email.toLowerCase() === 'jmkuczynski') {
+      // Ensure admin always has max tokens
+      if (user.token_balance < 999999999) {
+        await storage.updateUserTokenBalance(userId, 999999999);
+      }
+      return { canProceed: true, currentBalance: 999999999 };
+    }
+
     const currentBalance = user.token_balance || 0;
     
     if (currentBalance < requiredTokens) {
@@ -145,6 +154,19 @@ export class TokenService {
     const tokensUsedInt = Math.ceil(tokensUsed); // Ensure integer
     const user = await storage.getUser(userId);
     if (!user) throw new Error("User not found");
+
+    // Admin user bypass - never deduct tokens
+    if (user.email.toLowerCase() === 'jmkuczynski') {
+      // Just track usage but don't deduct tokens
+      await storage.createTokenUsage({
+        user_id: userId,
+        event_type: eventType,
+        tokens_used: tokensUsedInt,
+        tokens_remaining: 999999999, // Always unlimited
+        description: `${description} (ADMIN - no deduction)`,
+      });
+      return;
+    }
 
     const newBalance = (user.token_balance || 0) - tokensUsedInt;
     await storage.updateUserTokenBalance(userId, newBalance);

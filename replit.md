@@ -45,6 +45,14 @@ The system is structured into distinct layers:
 - ✅ Created anonymous session tracking for free users
 - ✅ Implemented file upload restrictions and token cost calculations
 
+### Admin User System Implementation
+- ✅ Created special admin user system for username 'jmkuczynski'
+- ✅ Admin can login with any password (authentication bypass)
+- ✅ Auto-registration creates admin account if doesn't exist
+- ✅ Unlimited token balance (999,999,999) with no deductions
+- ✅ All token limits and paywalls bypassed for admin user
+- ✅ Complete testing access without restrictions
+
 ### Frontend Architecture
 
 The frontend is built with React and uses a component-based architecture with a modern, clean UI powered by Tailwind CSS and shadcn/ui components. It implements:
