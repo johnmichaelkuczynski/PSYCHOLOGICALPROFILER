@@ -33,46 +33,49 @@ export async function analyzeWithPerplexity(text: string): Promise<CognitiveAnal
 // Helper functions to generate realistic-looking analysis
 
 function calculateIntelligenceScore(text: string): number {
-  // Enhanced scoring system for sophisticated academic texts
   const words = text.split(/\s+/).length;
-  const avgWordLength = text.replace(/\s+/g, '').length / words;
   const sentences = text.split(/[.!?]+/).length;
-  const avgSentenceLength = words / sentences;
   
-  // Start with higher base score for academic texts
-  let score = 85; // Increased base score
+  // Start with base score for conceptual depth assessment
+  let score = 88; // Higher base for sophisticated analysis
   
-  // Enhanced word complexity scoring
-  if (avgWordLength > 5) score += 6;
-  if (avgWordLength > 6) score += 5;
-  if (avgWordLength > 7) score += 4;
+  // Look for conceptual differentiation markers
+  const differentiationMarkers = ['vs.', 'versus', 'distinction between', 'difference between', 'contrast', 'taxonomy', 'categorize', 'typology', 'framework'];
+  const differentiationCount = differentiationMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += differentiationCount * 4; // High reward for conceptual differentiation
   
-  // Enhanced sentence complexity scoring  
-  if (avgSentenceLength > 15) score += 5;
-  if (avgSentenceLength > 20) score += 4;
-  if (avgSentenceLength > 25) score += 3;
+  // Structural insight indicators
+  const structuralMarkers = ['underlying', 'beneath', 'structure', 'pattern', 'systematic', 'framework', 'architecture', 'organization', 'configuration'];
+  const structuralCount = structuralMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += structuralCount * 3;
   
-  // Enhanced text length scoring
-  if (words > 200) score += 3;
-  if (words > 500) score += 3;
-  if (words > 1000) score += 2;
+  // Original thinking markers
+  const originalityMarkers = ['novel', 'original', 'unprecedented', 'breakthrough', 'innovative', 'creative', 'unique', 'groundbreaking'];
+  const originalityCount = originalityMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += originalityCount * 3;
   
-  // Enhanced academic/technical indicators
-  const academicTerms = ['therefore', 'however', 'furthermore', 'consequently', 'nevertheless', 'philosophy', 'analysis', 'concept', 'theory', 'framework', 'proposition', 'semantic', 'linguistic', 'cognitive', 'epistemological', 'ontological'];
-  const termCount = academicTerms.filter(term => text.toLowerCase().includes(term)).length;
-  score += termCount * 2;
-  
-  // Look for high-level philosophical/academic concepts
-  const sophisticatedTerms = ['metaphysics', 'epistemology', 'phenomenology', 'hermeneutics', 'dialectical', 'transcendental', 'intentionality', 'morphemes', 'isomorphs', 'pragmatics', 'semantics'];
+  // High-level philosophical/academic concepts (conceptual sophistication)
+  const sophisticatedTerms = ['metaphysics', 'epistemology', 'phenomenology', 'hermeneutics', 'dialectical', 'transcendental', 'intentionality', 'morphemes', 'isomorphs', 'pragmatics', 'semantics', 'ontological', 'cognitive', 'theoretical', 'analytical'];
   const sophisticatedCount = sophisticatedTerms.filter(term => text.toLowerCase().includes(term)).length;
   score += sophisticatedCount * 3;
   
-  // Bonus for systematic analysis patterns
-  if (text.includes('1.') || text.includes('2.') || text.includes('3.')) score += 3;
-  if (text.includes('Section') || text.includes('Chapter')) score += 2;
+  // Analytical precision markers
+  const precisionMarkers = ['precisely', 'specifically', 'exactly', 'rigorously', 'systematically', 'methodically'];
+  const precisionCount = precisionMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += precisionCount * 2;
   
-  // Recalibrated scoring range for academic texts
-  return Math.min(99, Math.max(80, score));
+  // Length bonus for sustained analysis
+  if (words > 300) score += 2;
+  if (words > 800) score += 3;
+  if (words > 1500) score += 2;
+  
+  // Dense theoretical work indicator (longer sentences can indicate sophisticated analysis)
+  const avgSentenceLength = words / sentences;
+  if (avgSentenceLength > 20) score += 3; // Reward complex theoretical exposition
+  if (avgSentenceLength > 30) score += 2;
+  
+  // Academic/theoretical sophistication
+  return Math.min(99, Math.max(85, score)); // Higher floor for sophisticated analysis
 }
 
 function generateCharacteristics(text: string): string[] {

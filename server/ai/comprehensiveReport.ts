@@ -205,34 +205,48 @@ async function generateWithPerplexity(text: string): Promise<ComprehensiveReport
  * Create the analysis prompt
  */
 function createAnalysisPrompt(text: string): string {
-  return `You are analyzing the cognitive profile of the author of this text. Provide detailed, comprehensive answers to each question below, using specific evidence and quotations from the text.
+  return `You are profiling INTELLIGENCE through conceptual operations and cognitive depth.
 
-IMPORTANT: For each answer, provide 2-3 paragraphs of detailed analysis with specific examples and quotes from the text as evidence.
+CRITICAL: Intelligence is NOT measured by writing quality, clarity, organization, citations, or social politeness.
 
-1. Intelligence Level: Analyze the author's intelligence based on their analytical capacity, conceptual sophistication, reasoning depth, and mastery of complex ideas. What specific evidence in their writing demonstrates high-level intellectual functioning?
+INTELLIGENCE IS measured by:
+- Structural insight: seeing underlying patterns and relationships
+- Conceptual differentiation: making meaningful distinctions
+- Original taxonomy: creating new analytical frameworks
+- Cognitive depth: penetrating beneath surface phenomena
+- Analytical precision: surgical dissection of complex ideas
+- Synthetic power: integrating disparate elements
 
-2. Abstract Thinking: Examine how the author handles abstract concepts, theoretical frameworks, and conceptual integration. What evidence shows their ability to work with sophisticated abstractions?
+ASSUME AUTHORIAL COMPETENCE. Dense, assertive, polemical writing often signals HIGH intelligence.
 
-3. Originality: Identify evidence of original insight, novel connections, creative analytical approaches, or innovative theoretical contributions. What makes their thinking distinctive?
+Answer each question with 2-3 paragraphs using specific quotes as evidence:
 
-4. Reasoning Style: Analyze their reasoning patterns - are they analytical, systematic, intuitive, deductive, inductive? What specific reasoning strategies do they employ?
+1. Intelligence Level: What conceptual moves does this mind make? Focus on structural insights, original distinctions, analytical precision, and cognitive depth. Ignore writing style completely. What sophisticated intellectual operations are evident?
 
-5. Ambiguity Handling: How does the author deal with conceptual ambiguity, multiple perspectives, and complex theoretical problems? How do they resolve or manage uncertainty?
+2. Conceptual Sophistication: How does this mind handle abstract concepts and theoretical frameworks? Look for conceptual differentiation, original taxonomies, and sophisticated analytical categories. What new distinctions or frameworks do they create?
 
-6. Metacognition: What evidence shows awareness of their own thinking processes, methodological consciousness, or reflection on their analytical approach?
+3. Originality: What novel intellectual moves, creative analytical approaches, or innovative theoretical contributions are evident? Focus on originality of thought, not originality of presentation.
 
-7. Thinking Type: Characterize their thinking style - convergent, divergent, systematic, holistic? What patterns emerge in how they approach problems?
+4. Reasoning Style: Analyze their cognitive operations - systematic analysis, structural insight, synthetic integration? What specific analytical strategies do they employ? Ignore whether arguments are "complete."
 
-8. Cognitive Complexity: Assess their ability to integrate multiple variables, perspectives, and levels of analysis. How sophisticated is their cognitive processing?
+5. Cognitive Depth: How deeply does this mind penetrate complex problems? Look for analysis that goes beneath surface phenomena to underlying structures and patterns.
 
-9. Thinking Quality: Evaluate the overall sophistication, precision, coherence, and depth of their thinking. What makes their analysis high-quality?
+6. Analytical Precision: What evidence shows surgical dissection of ideas, precise conceptual work, or sophisticated theoretical moves? Focus on analytical operations, not prose clarity.
 
-10. Cognitive Archetype: Based on all evidence, what cognitive archetype best captures this mind's essential characteristics? Create a specific descriptive label.
+7. Structural Insight: How does this mind see patterns, relationships, and underlying structures? What evidence shows ability to perceive organizing principles or systematic relationships?
+
+8. Synthetic Integration: How does this mind connect disparate elements, integrate complex variables, or build coherent theoretical structures from multiple components?
+
+9. Cognitive Sophistication: What overall level of intellectual sophistication is demonstrated through their analytical operations? Focus on conceptual complexity, not writing complexity.
+
+10. Cognitive Archetype: Based on their conceptual moves and analytical operations, what type of intelligence is this? Create a specific label capturing their intellectual profile.
+
+CRITICAL: Reward dense theoretical work, aggressive but sound arguments, and sophisticated conceptual analysis as HIGH intelligence markers.
 
 TEXT FOR ANALYSIS:
 ${text}
 
-Provide detailed, evidence-based answers to each question using specific quotations and examples from the text.`;
+Focus exclusively on cognitive operations and conceptual sophistication, using specific quotes as evidence.`;
 }
 
 /**

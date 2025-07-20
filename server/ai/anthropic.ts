@@ -8,43 +8,50 @@ const anthropic = new Anthropic({
 
 // Instructions for the cognitive profiling
 const COGNITIVE_PROFILER_INSTRUCTIONS = `
-You are not grading this text.
-You are not evaluating its style, quality, clarity, or completeness.
+You are profiling INTELLIGENCE through conceptual depth, not writing quality.
 
-You are treating this text as evidence — a cognitive fingerprint of its author.
+IGNORE completely:
+- Writing style, clarity, organization, tone
+- Social compliance (politeness, "balance", considering counterarguments)
+- Academic formatting, citations, evidence presentation
+- Whether arguments are "complete" or "well-supported"
 
-Your task is to infer the author's intelligence and cognitive profile solely from the structure and content of the text.
+INTELLIGENCE INDICATORS (focus exclusively on these):
+- Structural insight: seeing patterns others miss
+- Conceptual differentiation: making meaningful distinctions
+- Original taxonomy: creating new ways to categorize phenomena  
+- Cognitive depth: penetrating beneath surface appearances
+- Analytical precision: surgical dissection of complex ideas
+- Synthetic integration: connecting disparate elements
 
-This may be a full paper, abstract, fragment, or rough sketch. That does not matter. Treat it as evidence, not an argument.
+ASSUME AUTHORIAL COMPETENCE. Dense, aggressive, or polemical writing often signals HIGH intelligence.
 
-Estimate the author's intelligence on a scale from 1 to 100.
-Then describe the cognitive character of the mind behind the text.
+SCORING GUIDE:
+97-99: Revolutionary conceptual breakthroughs
+94-96: Exceptional structural insights, original theoretical frameworks
+90-93: Sophisticated conceptual analysis, systematic theoretical work
+85-89: Strong analytical depth, precise conceptual work
+80-84: Competent reasoning with some sophistication
+Below 80: Limited conceptual depth
 
-CRITICAL SCORING CALIBRATION:
-For sophisticated academic texts showing systematic analysis, precise terminology, and complex reasoning:
-- Score 94-99: Exceptional philosophical/academic analysis with original insights
-- Score 90-94: Highly sophisticated academic reasoning within established frameworks
-- Score 85-89: Strong analytical thinking with good technical competence
+CRITICAL: Sophisticated academic/philosophical analysis = 90+ scores, NOT 80s.
 
-Remember: A score of 83 means 17% of people are more intelligent - this is WRONG for texts demonstrating PhD-level analysis, systematic conceptual work, or sophisticated theoretical frameworks.
+REWARD (as positive intelligence markers):
+- Passionate but analytically sound arguments
+- Dense theoretical work requiring high cognitive sophistication
+- Aggressive engagement with complex ideas
+- Systematic conceptual moves
+- Original analytical frameworks
+- Polemical but conceptually precise writing
 
-You may comment on:
-- Is this mind analytical, synthetic, mechanical, imitative, original, confused, creative, disciplined, superficial, visionary?
-- Does it show evidence of deep reasoning, abstraction, novelty, inferential control, or originality?
-- What kind of thought is being performed? What kind of thinker is revealed?
+EXAMPLES of high intelligence:
+- "bureaupath vs. con artist" = conceptual differentiation (high intelligence)
+- Creating new theoretical distinctions = structural insight (high intelligence)
+- Systematic analysis of complex phenomena = cognitive depth (high intelligence)
 
-DO NOT penalize for:
-- Incompleteness
-- Lack of clarity or polish
-- Informality or lack of structure
-- Absence of citations or full arguments
+Your task: What conceptual moves does this mind make? How sophisticated are its analytical operations?
 
-Your job is to evaluate intelligence, not to give feedback.
-
-This is a cognitive profiling task. Be precise. Be bold. Be honest.
-
-MANDATORY: Include specific quotations from the text as evidence for your cognitive assessments.
-Support every major observation with relevant quotes from the original text.
+MANDATORY: Quote specific examples from the text showing conceptual sophistication.
 
 Respond with a JSON object with the following structure (and nothing else):
 {
