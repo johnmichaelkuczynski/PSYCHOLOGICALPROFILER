@@ -36,46 +36,45 @@ function calculateIntelligenceScore(text: string): number {
   const words = text.split(/\s+/).length;
   const sentences = text.split(/[.!?]+/).length;
   
-  // Start with base score for conceptual depth assessment
-  let score = 88; // Higher base for sophisticated analysis
+  // Start with realistic base score - most texts aren't genuinely intelligent
+  let score = 72;
   
-  // Look for conceptual differentiation markers
-  const differentiationMarkers = ['vs.', 'versus', 'distinction between', 'difference between', 'contrast', 'taxonomy', 'categorize', 'typology', 'framework'];
-  const differentiationCount = differentiationMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
-  score += differentiationCount * 4; // High reward for conceptual differentiation
+  // FRICTION INDICATORS (high rewards for cognitive strain)
+  const frictionMarkers = ['struggle', 'tension', 'paradox', 'dilemma', 'puzzle', 'mystery', 'contradiction', 'problem', 'difficulty', 'challenge', 'resist', 'elusive'];
+  const frictionCount = frictionMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += frictionCount * 5; // High reward for epistemic friction
   
-  // Structural insight indicators
-  const structuralMarkers = ['underlying', 'beneath', 'structure', 'pattern', 'systematic', 'framework', 'architecture', 'organization', 'configuration'];
-  const structuralCount = structuralMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
-  score += structuralCount * 3;
+  // RISK-TAKING INDICATORS (pursuing potentially wrong ideas)
+  const riskMarkers = ['might be wrong', 'could be', 'perhaps', 'maybe', 'speculative', 'tentative', 'experimental', 'risky', 'dangerous', 'controversial'];
+  const riskCount = riskMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += riskCount * 4; // Reward intellectual risk-taking
   
-  // Original thinking markers
-  const originalityMarkers = ['novel', 'original', 'unprecedented', 'breakthrough', 'innovative', 'creative', 'unique', 'groundbreaking'];
-  const originalityCount = originalityMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
-  score += originalityCount * 3;
+  // GENERATIVE PRESSURE (creating new territory)
+  const generativeMarkers = ['breakthrough', 'discovery', 'insight', 'revelation', 'realization', 'eureka', 'aha', 'suddenly', 'emerged', 'crystallized'];
+  const generativeCount = generativeMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += generativeCount * 6; // High reward for generative moments
   
-  // High-level philosophical/academic concepts (conceptual sophistication)
-  const sophisticatedTerms = ['metaphysics', 'epistemology', 'phenomenology', 'hermeneutics', 'dialectical', 'transcendental', 'intentionality', 'morphemes', 'isomorphs', 'pragmatics', 'semantics', 'ontological', 'cognitive', 'theoretical', 'analytical'];
-  const sophisticatedCount = sophisticatedTerms.filter(term => text.toLowerCase().includes(term)).length;
-  score += sophisticatedCount * 3;
+  // ARGUMENTATIVE HEAT (wrestling with ideas)
+  const heatMarkers = ['but', 'however', 'yet', 'nevertheless', 'still', 'despite', 'although', 'whereas', 'conflict', 'debate', 'argue'];
+  const heatCount = heatMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score += heatCount * 2; // Reward argumentative engagement
   
-  // Analytical precision markers
-  const precisionMarkers = ['precisely', 'specifically', 'exactly', 'rigorously', 'systematically', 'methodically'];
-  const precisionCount = precisionMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
-  score += precisionCount * 2;
+  // PENALIZE ACADEMIC THEATER
+  const theaterMarkers = ['framework', 'taxonomy', 'categorize', 'organize', 'systematic', 'comprehensive', 'thorough', 'complete'];
+  const theaterCount = theaterMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score -= theaterCount * 3; // Penalize safe academic organizing
   
-  // Length bonus for sustained analysis
-  if (words > 300) score += 2;
-  if (words > 800) score += 3;
-  if (words > 1500) score += 2;
+  // PENALIZE CLEAN RESOLUTION
+  const cleanMarkers = ['conclusion', 'therefore', 'thus', 'hence', 'clearly', 'obviously', 'evidently', 'certainly'];
+  const cleanCount = cleanMarkers.filter(marker => text.toLowerCase().includes(marker)).length;
+  score -= cleanCount * 2; // Penalize premature closure
   
-  // Dense theoretical work indicator (longer sentences can indicate sophisticated analysis)
-  const avgSentenceLength = words / sentences;
-  if (avgSentenceLength > 20) score += 3; // Reward complex theoretical exposition
-  if (avgSentenceLength > 30) score += 2;
+  // Length penalty for verbose organizing (academic padding)
+  if (words > 1000) score -= 3;
+  if (words > 2000) score -= 5;
   
-  // Academic/theoretical sophistication
-  return Math.min(99, Math.max(85, score)); // Higher floor for sophisticated analysis
+  // Realistic ceiling - genuine intelligence is rare
+  return Math.min(98, Math.max(60, score));
 }
 
 function generateCharacteristics(text: string): string[] {

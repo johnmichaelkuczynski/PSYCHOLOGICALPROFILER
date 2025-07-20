@@ -205,48 +205,41 @@ async function generateWithPerplexity(text: string): Promise<ComprehensiveReport
  * Create the analysis prompt
  */
 function createAnalysisPrompt(text: string): string {
-  return `You are profiling INTELLIGENCE through conceptual operations and cognitive depth.
+  return `You are analyzing RAW INTELLECTUAL HORSEPOWER, not academic performance.
 
-CRITICAL: Intelligence is NOT measured by writing quality, clarity, organization, citations, or social politeness.
+CORE QUESTION: Setting aside all university and publishing standards, focusing ONLY on actual cognitive force - does this text show genuine intelligence?
 
-INTELLIGENCE IS measured by:
-- Structural insight: seeing underlying patterns and relationships
-- Conceptual differentiation: making meaningful distinctions
-- Original taxonomy: creating new analytical frameworks
-- Cognitive depth: penetrating beneath surface phenomena
-- Analytical precision: surgical dissection of complex ideas
-- Synthetic power: integrating disparate elements
+NOT: "Would credentialed academics approve of this?"
+YES: "Is this mind generating real cognitive force?"
 
-ASSUME AUTHORIAL COMPETENCE. Dense, assertive, polemical writing often signals HIGH intelligence.
+Answer each question focusing on INTELLECTUAL FRICTION and GENERATIVE PRESSURE:
 
-Answer each question with 2-3 paragraphs using specific quotes as evidence:
+1. Cognitive Force: Is this mind under genuine epistemic strain? Look for intellectual struggle, not clean organization. Does this show argumentative heat and cognitive disequilibrium? Quote evidence of mental effort.
 
-1. Intelligence Level: What conceptual moves does this mind make? Focus on structural insights, original distinctions, analytical precision, and cognitive depth. Ignore writing style completely. What sophisticated intellectual operations are evident?
+2. Epistemic Risk: Is this mind taking genuine intellectual risks? Look for ideas that could be wrong, not safe academic positions. Does this pursue potentially dangerous thoughts? Quote risky moves.
 
-2. Conceptual Sophistication: How does this mind handle abstract concepts and theoretical frameworks? Look for conceptual differentiation, original taxonomies, and sophisticated analytical categories. What new distinctions or frameworks do they create?
+3. Generative Pressure: Is this creating new conceptual territory under strain? Look for breakthrough moments, not taxonomic organizing. Does this show synthetic force under pressure? Quote generative insights.
 
-3. Originality: What novel intellectual moves, creative analytical approaches, or innovative theoretical contributions are evident? Focus on originality of thought, not originality of presentation.
+4. Intellectual Friction: How does this mind wrestle with resistant problems? Look for struggle with genuinely hard questions, not summary of known positions. Quote evidence of cognitive wrestling.
 
-4. Reasoning Style: Analyze their cognitive operations - systematic analysis, structural insight, synthetic integration? What specific analytical strategies do they employ? Ignore whether arguments are "complete."
+5. Novel Territory: Does this break genuinely new ground? Look for surprising conclusions that would challenge other intelligent minds, not safe academic consensus. Quote novel insights.
 
-5. Cognitive Depth: How deeply does this mind penetrate complex problems? Look for analysis that goes beneath surface phenomena to underlying structures and patterns.
+6. Synthetic Strain: Does this mind force integration under pressure? Look for ideas being synthesized against resistance, not list-making or organizing. Quote moments of forced synthesis.
 
-6. Analytical Precision: What evidence shows surgical dissection of ideas, precise conceptual work, or sophisticated theoretical moves? Focus on analytical operations, not prose clarity.
+7. Argumentative Heat: Is there real intellectual combat here? Look for ideas fighting against each other, not balanced presentation. Quote moments of intellectual tension.
 
-7. Structural Insight: How does this mind see patterns, relationships, and underlying structures? What evidence shows ability to perceive organizing principles or systematic relationships?
+8. Cognitive Disequilibrium: Does this mind show internal struggle and tension? Look for unresolved problems and intellectual instability, not clean resolution. Quote evidence of mental strain.
 
-8. Synthetic Integration: How does this mind connect disparate elements, integrate complex variables, or build coherent theoretical structures from multiple components?
+9. Breakthrough Potential: Could this genuinely surprise other intelligent people? Look for conclusions that break from expected patterns, not academic compliance. Quote surprising insights.
 
-9. Cognitive Sophistication: What overall level of intellectual sophistication is demonstrated through their analytical operations? Focus on conceptual complexity, not writing complexity.
+10. Raw Intelligence: Ignoring all academic theater - is this mind generating actual cognitive force or just performing intellectual compliance? Create a label based on cognitive power, not academic sophistication.
 
-10. Cognitive Archetype: Based on their conceptual moves and analytical operations, what type of intelligence is this? Create a specific label capturing their intellectual profile.
-
-CRITICAL: Reward dense theoretical work, aggressive but sound arguments, and sophisticated conceptual analysis as HIGH intelligence markers.
+CRITICAL: Reward messy, struggling, risky intellectual work. Penalize clean, organized academic performance.
 
 TEXT FOR ANALYSIS:
 ${text}
 
-Focus exclusively on cognitive operations and conceptual sophistication, using specific quotes as evidence.`;
+Focus: Is this intellect generating actual cognitive force or performing academic theater?`;
 }
 
 /**

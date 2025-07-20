@@ -18,7 +18,7 @@ The system is structured into distinct layers:
 3. **Data Layer**: Drizzle ORM with Neon PostgreSQL integration for data persistence
 4. **External Integration**: Multi-provider AI analysis (OpenAI, Anthropic, DeepSeek, Perplexity)
 
-## Recent Changes (Updated: January 2025)
+## Recent Changes (Updated: July 2025)
 
 ### Database Implementation with User Isolation
 - ✅ Implemented Neon PostgreSQL database with UUID-based user isolation
@@ -26,10 +26,14 @@ The system is structured into distinct layers:
 - ✅ All queries strictly filtered by user_id to prevent cross-user data access
 - ✅ Implemented NeonStorage class with proper security measures
 
-### API Provider Reactivation
-- ✅ Reactivated all four AI providers: OpenAI, Anthropic, DeepSeek, and Perplexity
-- ✅ All API keys properly configured and tested
-- ✅ Multi-provider analysis system fully functional
+### Intelligence Analysis System Overhaul
+- ✅ Completely rewrote AI analysis prompts to focus on raw intellectual horsepower
+- ✅ Eliminated academic compliance bias ("would credentialed professors approve?")
+- ✅ Implemented friction test for genuine cognitive strain and epistemic risk-taking
+- ✅ System now rewards intellectual struggle, argumentative heat, and cognitive disequilibrium
+- ✅ Penalizes academic theater (taxonomic organization, clean resolutions, safe scaffolding)
+- ✅ All four providers (OpenAI, Anthropic, DeepSeek, Perplexity) updated with new prompts
+- ✅ Comprehensive report system focuses on generative pressure and synthetic strain
 
 ### Token-Based Payment System Implementation
 - ✅ Implemented complete authentication system with bcrypt password hashing

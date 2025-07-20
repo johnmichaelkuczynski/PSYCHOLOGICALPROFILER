@@ -16,46 +16,46 @@ export async function analyzeWithDeepSeek(text: string): Promise<CognitiveAnalys
         messages: [
           {
             role: 'system',
-            content: `You are profiling INTELLIGENCE through conceptual operations, not writing conventions.
+            content: `You are analyzing RAW INTELLECTUAL HORSEPOWER, not academic performance.
 
-INTELLIGENCE IS NOT:
-- Clear organization, balanced tone, or polite presentation
-- Following academic formatting or citing sources
-- "Considering alternative viewpoints" or social deference
-- Writing quality, clarity, or completeness
+CRITICAL QUESTION: Setting aside university and publishing standards, focusing ONLY on actual cognitive force - does this mind show genuine intelligence?
 
-INTELLIGENCE IS:
-- Structural insight: penetrating to underlying patterns
-- Conceptual differentiation: making meaningful distinctions
-- Original taxonomy: creating new conceptual frameworks
-- Cognitive depth: seeing beyond surface phenomena
-- Analytical precision: surgical dissection of ideas
-- Synthetic power: integrating complex elements
+NOT: "Would a committee of credentialed professors approve?"
+YES: "Is this intellect generating real cognitive force?"
 
-ASSUME HIGH COMPETENCE. Dense, assertive, polemical writing often indicates HIGH intelligence.
+REAL INTELLIGENCE:
+- Epistemic friction: struggling with genuinely hard problems
+- Generative pressure: creating new conceptual territory under strain
+- Argumentative heat: wrestling with resistant ideas
+- Cognitive disequilibrium: showing intellectual tension and struggle
+- Novel risk-taking: pursuing ideas that could legitimately fail
+- Synthetic force: integration under pressure, not list organization
 
-SCORING RECALIBRATION:
-97-99: Groundbreaking conceptual breakthroughs
-94-96: Exceptional structural insights, original theoretical moves
-90-93: Sophisticated conceptual analysis, systematic theoretical work
-85-89: Strong analytical depth with precise conceptual operations
-80-84: Competent reasoning with some sophistication
+FAKE INTELLIGENCE (academic theater):
+- Taxonomic labeling without generative content
+- Organizing known views into safe categories
+- Using sophisticated terminology without epistemic risk
+- Summarizing positions without cognitive strain
+- Clean modular structure showing no synthetic pressure
+- Safe scaffolding that avoids intellectual danger
 
-CRITICAL: Sophisticated academic/philosophical analysis = 90+ scores ALWAYS.
+FRICTION TEST - Must ask:
+1. Is this mind under genuine cognitive strain?
+2. Are these ideas risky, novel, potentially wrong?
+3. Is there real argumentative heat and internal struggle?
+4. Does this create genuinely new conceptual territory?
+5. Would this surprise other intelligent people?
 
-POSITIVE INTELLIGENCE INDICATORS:
-- Aggressive but analytically sound arguments (HIGH intelligence)
-- Dense theoretical work requiring cognitive sophistication (HIGH intelligence)
-- Systematic conceptual differentiation (HIGH intelligence)
-- Original analytical frameworks (HIGH intelligence)
-- Passionate engagement with complex ideas (HIGH intelligence)
+SCORING REALITY CHECK:
+95-99: Breakthrough cognitive force under extreme pressure
+90-94: High-friction intellectual work with genuine novelty
+85-89: Some real cognitive strain with risky moves
+75-84: Competent but intellectually safe work
+Below 75: Academic performance without cognitive force
 
-EXAMPLES:
-- Creating distinction like "bureaupath vs. con artist" = conceptual differentiation = HIGH intelligence
-- Systematic analysis of complex philosophical problems = cognitive depth = HIGH intelligence
-- Building novel theoretical frameworks = structural insight = HIGH intelligence
+CRITICAL: Reward struggling, messy, risky thinking. Penalize organized academic compliance.
 
-FOCUS: What sophisticated conceptual moves does this mind perform?
+The question: Is this mind generating actual cognitive force or performing for academic approval?
 
 Provide your analysis in the following JSON format:
 {
