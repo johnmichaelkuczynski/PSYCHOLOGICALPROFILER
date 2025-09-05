@@ -24,6 +24,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     confirmPassword: '',
   });
 
+  const isAdminUser = (email: string) => {
+    const adminEmails = ['jmkuczynski', 'jmkuczynski@yahoo.com'];
+    return adminEmails.some(admin => admin.toLowerCase() === email.toLowerCase().trim());
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -45,7 +50,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         },
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password,
+          password: isAdminUser(formData.email) ? '' : formData.password,
         }),
       });
 
@@ -133,28 +138,39 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    required
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+              {!isAdminUser(formData.email) && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {isAdminUser(formData.email) && (
+                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="text-sm text-green-700">
+                    <span className="font-medium">Admin Access Detected</span>
+                    <p className="mt-1">No password required for admin accounts.</p>
+                  </div>
+                </div>
+              )}
               
               {error && (
                 <Alert variant="destructive">
