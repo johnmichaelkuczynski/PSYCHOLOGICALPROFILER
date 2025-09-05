@@ -128,8 +128,9 @@ export async function checkRegisteredTokenLimits(req: AuthenticatedRequest, res:
       return next();
     }
 
-    // Admin bypass - jmkuczynski always has unlimited access
-    if (req.user.email.toLowerCase() === 'jmkuczynski') {
+    // Admin bypass - admin users always have unlimited access
+    const adminUsernames = ['jmkuczynski', 'jmkuczynski@yahoo.com'];
+    if (adminUsernames.some(admin => admin.toLowerCase() === req.user.email.toLowerCase())) {
       return next();
     }
 

@@ -91,7 +91,8 @@ export class TokenService {
     }
 
     // Admin user bypass - always has unlimited tokens
-    if (user.email.toLowerCase() === 'jmkuczynski') {
+    const adminUsernames = ['jmkuczynski', 'jmkuczynski@yahoo.com'];
+    if (adminUsernames.some(admin => admin.toLowerCase() === user.email.toLowerCase())) {
       // Ensure admin always has max tokens
       if (user.token_balance < 999999999) {
         await storage.updateUserTokenBalance(userId, 999999999);
@@ -156,7 +157,8 @@ export class TokenService {
     if (!user) throw new Error("User not found");
 
     // Admin user bypass - never deduct tokens
-    if (user.email.toLowerCase() === 'jmkuczynski') {
+    const adminUsernames = ['jmkuczynski', 'jmkuczynski@yahoo.com'];
+    if (adminUsernames.some(admin => admin.toLowerCase() === user.email.toLowerCase())) {
       // Just track usage but don't deduct tokens
       await storage.createTokenUsage({
         user_id: userId,
