@@ -53,6 +53,16 @@ The system is structured into distinct layers:
 - ✅ All token limits and paywalls bypassed for admin user
 - ✅ Complete testing access without restrictions
 - ✅ Both username formats work seamlessly
+- ✅ Passwordless login: Admin users no longer need to enter passwords (September 2025)
+
+### UI/UX Improvements (September 2025)
+- ✅ Added CONTACT US link in header linking to contact@zhisystems.ai
+- ✅ Fixed cognitive profile visibility issues - made all text dark and readable
+- ✅ Improved user account bar text contrast and readability  
+- ✅ Fixed psychological profiler component errors with undefined array handling
+- ✅ Added re-analyze functionality - users can re-run analysis without clearing text
+- ✅ Dual analysis buttons: "Re-analyze" (keeps text) and "New Analysis" (clears all)
+- ✅ Enhanced cognitive characteristics badges with better color contrast
 
 ### Frontend Architecture
 
