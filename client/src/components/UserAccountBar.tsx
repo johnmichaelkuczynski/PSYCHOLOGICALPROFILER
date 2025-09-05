@@ -36,8 +36,8 @@ export default function UserAccountBar({ user, onLogin, onLogout, onBuyCredits }
                 <User className="h-4 w-4 text-gray-500" />
               </div>
               <div>
-                <p className="font-medium">Free User</p>
-                <p className="text-sm text-gray-500">Limited to 1,000 tokens</p>
+                <p className="font-medium text-gray-900">Free User</p>
+                <p className="text-sm text-gray-700">Limited to 1,000 tokens</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -64,9 +64,9 @@ export default function UserAccountBar({ user, onLogin, onLogout, onBuyCredits }
               <User className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="font-medium">{user.email}</p>
+              <p className="font-medium text-gray-900">{user.email}</p>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-green-600">
+                <Badge variant="secondary" className="text-green-700 bg-green-100 border-green-200">
                   <Zap className="h-3 w-3 mr-1" />
                   {user.token_balance.toLocaleString()} tokens
                 </Badge>
