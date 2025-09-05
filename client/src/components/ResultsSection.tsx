@@ -87,12 +87,12 @@ function CognitiveProfileCard({
         </div>
         
         <div className="mb-6">
-          <h4 className="font-medium text-secondary-light mb-2">Cognitive Characteristics</h4>
+          <h4 className="font-medium text-gray-900 mb-2">Cognitive Characteristics</h4>
           <div className="flex flex-wrap gap-2">
             {result.characteristics.map((characteristic, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-secondary/10 rounded-full text-secondary-dark text-sm"
+                className="px-3 py-1 bg-blue-100 rounded-full text-blue-800 text-sm font-medium"
               >
                 {characteristic}
               </span>
@@ -101,25 +101,25 @@ function CognitiveProfileCard({
         </div>
         
         <div className="mb-6">
-          <h4 className="font-medium text-secondary-light mb-2">Analysis</h4>
-          <p className="text-neutral-700">{result.detailedAnalysis}</p>
+          <h4 className="font-medium text-gray-900 mb-2">Analysis</h4>
+          <p className="text-gray-800">{result.detailedAnalysis}</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 className="font-medium text-secondary-light mb-2">Cognitive Strengths</h4>
+            <h4 className="font-medium text-gray-900 mb-2">Cognitive Strengths</h4>
             <ul className="list-disc pl-4 space-y-1">
               {result.strengths.map((strength, index) => (
-                <li key={index} className="text-neutral-700">{strength}</li>
+                <li key={index} className="text-gray-800">{strength}</li>
               ))}
             </ul>
           </div>
           
           <div>
-            <h4 className="font-medium text-secondary-light mb-2">Cognitive Tendencies</h4>
+            <h4 className="font-medium text-gray-900 mb-2">Cognitive Tendencies</h4>
             <ul className="list-disc pl-4 space-y-1">
               {result.tendencies.map((tendency, index) => (
-                <li key={index} className="text-neutral-700">{tendency}</li>
+                <li key={index} className="text-gray-800">{tendency}</li>
               ))}
             </ul>
           </div>
@@ -131,7 +131,7 @@ function CognitiveProfileCard({
 
 interface ResultsSectionProps {
   result: MultiProviderAnalysisResult;
-  onNewAnalysis: () => void;
+  onNewAnalysis: (clearText?: boolean) => void;
 }
 
 export default function ResultsSection({ result, onNewAnalysis }: ResultsSectionProps) {
@@ -385,16 +385,29 @@ export default function ResultsSection({ result, onNewAnalysis }: ResultsSection
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <h2 className="font-heading font-semibold text-xl text-white">Multi-Provider Cognitive Profile</h2>
             
-            {/* New Analysis button at the top */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNewAnalysis()}
-              className="bg-white text-secondary hover:bg-white/90 border-white/20 font-medium"
-            >
-              <RefreshCw className="h-4 w-4 mr-1" />
-              New Analysis
-            </Button>
+            <div className="flex gap-2">
+              {/* Re-analyze button - keeps the text */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNewAnalysis(false)}
+                className="bg-white/20 text-white hover:bg-white/30 border-white/40 font-medium"
+              >
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Re-analyze
+              </Button>
+              
+              {/* New Analysis button - clears everything */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNewAnalysis(true)}
+                className="bg-white text-secondary hover:bg-white/90 border-white/20 font-medium"
+              >
+                <RefreshCw className="h-4 w-4 mr-1" />
+                New Analysis
+              </Button>
+            </div>
           </div>
           
           <div className="flex flex-wrap gap-2">
@@ -819,7 +832,7 @@ export default function ResultsSection({ result, onNewAnalysis }: ResultsSection
         <Button 
           variant="outline" 
           size="lg" 
-          onClick={onNewAnalysis}
+          onClick={() => onNewAnalysis(true)}
           className="flex items-center gap-2"
         >
           <RefreshCw className="h-4 w-4" />

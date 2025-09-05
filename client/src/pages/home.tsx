@@ -113,13 +113,15 @@ export default function Home() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = (clearText: boolean = true) => {
     // Reset both analysis types to ensure a clean state
     resetCognitive();
     resetPsychological();
     
-    // Clear the text input
-    setTextSample("");
+    // Only clear the text input if clearText is true
+    if (clearText) {
+      setTextSample("");
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

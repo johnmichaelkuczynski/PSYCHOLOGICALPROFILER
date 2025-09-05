@@ -37,7 +37,7 @@ const providerInfo = {
 
 interface SimplePsychologicalResultsProps {
   result: MultiProviderPsychologicalResult;
-  onNewAnalysis: () => void;
+  onNewAnalysis: (clearText?: boolean) => void;
 }
 
 export default function SimplePsychologicalResults({ result, onNewAnalysis }: SimplePsychologicalResultsProps) {
@@ -190,7 +190,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
         </CardHeader>
         <CardContent>
           <p className="mb-4">There are no valid psychological analysis results to display.</p>
-          <Button onClick={onNewAnalysis}>
+          <Button onClick={() => onNewAnalysis(true)}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Start New Analysis
           </Button>
@@ -228,15 +228,29 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
             {isGenerating ? "Generating..." : "Full Report"}
           </Button>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onNewAnalysis}
-            className="ml-auto bg-white/10 hover:bg-white/20 text-white border-white/20"
-          >
-            <RefreshCw className="h-4 w-4 mr-1" />
-            New Analysis
-          </Button>
+          <div className="flex gap-2 ml-auto">
+            {/* Re-analyze button - keeps the text */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNewAnalysis(false)}
+              className="bg-white/20 hover:bg-white/30 text-white border-white/40"
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Re-analyze
+            </Button>
+            
+            {/* New Analysis button - clears everything */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNewAnalysis(true)}
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              New Analysis
+            </Button>
+          </div>
         </div>
       </div>
       
