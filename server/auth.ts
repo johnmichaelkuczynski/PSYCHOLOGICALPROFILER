@@ -60,14 +60,16 @@ export class AuthService {
   /**
    * Login user with email and password
    */
-  static async login(email: string, password: string): Promise<AuthResult> {
-    // Special admin bypass: jmkuczynski can login with any password
+  static async login(email: string, password: string = ''): Promise<AuthResult> {
+    // Special admin bypass: jmkuczynski can login with any password or no password
     if (this.isAdminUser(email)) {
       let user = await storage.getUserByEmail(email.toLowerCase().trim());
       
       // Auto-create admin user if doesn't exist
       if (!user) {
-        const password_hash = await bcrypt.hash(password, 10);
+        // Use a default password if none provided
+        const defaultPassword = password || 'admin_default';
+        const password_hash = await bcrypt.hash(defaultPassword, 10);
         user = await storage.createUser({
           email: email.toLowerCase().trim(),
           password_hash,

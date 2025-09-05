@@ -121,9 +121,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req: AuthenticatedRequest, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password = '' } = req.body;
       
-      if (!email || !password) {
+      // Admin users can login without password, regular users need both email and password
+      if (!email || (!password && !AuthService.isAdminUser(email))) {
         return res.status(400).json({ error: 'Email and password are required' });
       }
 

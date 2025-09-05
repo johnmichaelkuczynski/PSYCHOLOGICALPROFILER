@@ -125,35 +125,35 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
       if (providerResult.emotionalProfile) {
         resultsText += "EMOTIONAL PROFILE:\n";
         resultsText += `Emotional Stability: ${providerResult.emotionalProfile.emotionalStability}/100\n`;
-        resultsText += `Primary Emotions: ${providerResult.emotionalProfile.primaryEmotions.join(', ')}\n`;
+        resultsText += `Primary Emotions: ${(providerResult.emotionalProfile.primaryEmotions || []).join(', ')}\n`;
         resultsText += `Analysis: ${providerResult.emotionalProfile.detailedAnalysis}\n\n`;
       }
       
       if (providerResult.motivationalStructure) {
         resultsText += "MOTIVATIONAL STRUCTURE:\n";
-        resultsText += `Primary Drives: ${providerResult.motivationalStructure.primaryDrives.join(', ')}\n`;
-        resultsText += `Motivational Patterns: ${providerResult.motivationalStructure.motivationalPatterns.join(', ')}\n`;
+        resultsText += `Primary Drives: ${(providerResult.motivationalStructure.primaryDrives || []).join(', ')}\n`;
+        resultsText += `Motivational Patterns: ${(providerResult.motivationalStructure.motivationalPatterns || []).join(', ')}\n`;
         resultsText += `Analysis: ${providerResult.motivationalStructure.detailedAnalysis}\n\n`;
       }
       
       if (providerResult.interpersonalDynamics) {
         resultsText += "INTERPERSONAL DYNAMICS:\n";
         resultsText += `Attachment Style: ${providerResult.interpersonalDynamics.attachmentStyle}\n`;
-        resultsText += `Social Orientations: ${providerResult.interpersonalDynamics.socialOrientations.join(', ')}\n`;
-        resultsText += `Relationship Patterns: ${providerResult.interpersonalDynamics.relationshipPatterns.join(', ')}\n`;
+        resultsText += `Social Orientations: ${(providerResult.interpersonalDynamics.socialOrientations || []).join(', ')}\n`;
+        resultsText += `Relationship Patterns: ${(providerResult.interpersonalDynamics.relationshipPatterns || []).join(', ')}\n`;
         resultsText += `Analysis: ${providerResult.interpersonalDynamics.detailedAnalysis}\n\n`;
       }
       
       if (providerResult.strengths && providerResult.strengths.length > 0) {
         resultsText += "PSYCHOLOGICAL STRENGTHS:\n";
-        providerResult.strengths.forEach(strength => {
+        (providerResult.strengths || []).forEach(strength => {
           resultsText += `- ${strength}\n`;
         });
       }
       
       if (providerResult.challenges && providerResult.challenges.length > 0) {
         resultsText += "\nGROWTH AREAS:\n";
-        providerResult.challenges.forEach(challenge => {
+        (providerResult.challenges || []).forEach(challenge => {
           resultsText += `- ${challenge}\n`;
         });
       }
@@ -304,7 +304,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
                         <div>
                           <div className="font-medium mb-2">Primary Emotions</div>
                           <div className="flex flex-wrap gap-2">
-                            {providerData.emotionalProfile.primaryEmotions.map((emotion, index) => (
+                            {(providerData.emotionalProfile.primaryEmotions || []).map((emotion, index) => (
                               <span key={index} className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">
                                 {emotion}
                               </span>
@@ -329,7 +329,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
                         <div>
                           <div className="font-medium mb-2">Primary Drives</div>
                           <div className="flex flex-wrap gap-2">
-                            {providerData.motivationalStructure.primaryDrives.map((drive, index) => (
+                            {(providerData.motivationalStructure.primaryDrives || []).map((drive, index) => (
                               <span key={index} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
                                 {drive}
                               </span>
@@ -340,7 +340,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
                         <div>
                           <div className="font-medium mb-2">Motivational Patterns</div>
                           <div className="flex flex-wrap gap-2">
-                            {providerData.motivationalStructure.motivationalPatterns.map((pattern, index) => (
+                            {(providerData.motivationalStructure.motivationalPatterns || []).map((pattern, index) => (
                               <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                                 {pattern}
                               </span>
@@ -372,7 +372,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
                         <div>
                           <div className="font-medium mb-2">Social Orientations</div>
                           <div className="flex flex-wrap gap-2">
-                            {providerData.interpersonalDynamics.socialOrientations.map((orientation, index) => (
+                            {(providerData.interpersonalDynamics.socialOrientations || []).map((orientation, index) => (
                               <span key={index} className="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-sm">
                                 {orientation}
                               </span>
@@ -383,7 +383,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
                         <div>
                           <div className="font-medium mb-2">Relationship Patterns</div>
                           <div className="flex flex-wrap gap-2">
-                            {providerData.interpersonalDynamics.relationshipPatterns.map((pattern, index) => (
+                            {(providerData.interpersonalDynamics.relationshipPatterns || []).map((pattern, index) => (
                               <span key={index} className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full text-sm">
                                 {pattern}
                               </span>
@@ -406,7 +406,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
                       <div className="p-4 bg-white rounded-xl border border-neutral-200">
                         <h3 className="font-heading text-lg font-semibold mb-4">Psychological Strengths</h3>
                         <ul className="space-y-2">
-                          {providerData.strengths.map((strength, index) => (
+                          {(providerData.strengths || []).map((strength, index) => (
                             <li key={index} className="flex items-start gap-2">
                               <div className="min-w-4 mt-1 text-emerald-500">•</div>
                               <span>{strength}</span>
@@ -421,7 +421,7 @@ export default function SimplePsychologicalResults({ result, onNewAnalysis }: Si
                       <div className="p-4 bg-white rounded-xl border border-neutral-200">
                         <h3 className="font-heading text-lg font-semibold mb-4">Growth Areas</h3>
                         <ul className="space-y-2">
-                          {providerData.challenges.map((challenge, index) => (
+                          {(providerData.challenges || []).map((challenge, index) => (
                             <li key={index} className="flex items-start gap-2">
                               <div className="min-w-4 mt-1 text-orange-500">•</div>
                               <span>{challenge}</span>
